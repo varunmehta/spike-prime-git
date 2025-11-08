@@ -1,0 +1,74 @@
+{
+  "manifest_version": 3,
+  "name": "SpikePrimeGit",
+  "version": "1.0.0",
+  "description": "Sync your LEGO SPIKE Prime projects directly to GitHub repositories",
+  "permissions": [
+    "storage",
+    "identity",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://spike.legoeducation.com/*",
+    "https://api.github.com/*",
+    "https://github.com/*",
+    "https://spikeprimegit-auth.spikeprimegit.workers.dev/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://spike.legoeducation.com/prime/lobby/*",
+        "https://spike.legoeducation.com/*"
+      ],
+      "js": [
+        "content/spike-interceptor.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://spike.legoeducation.com/prime/lobby/*",
+        "https://spike.legoeducation.com/*"
+      ],
+      "js": [
+        "content/ui-injector.js",
+        "content/content-script.js"
+      ],
+      "css": [
+        "assets/styles/inject.css"
+      ],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/styles/inject.css",
+        "assets/icons/*"
+      ],
+      "matches": [
+        "https://spike.legoeducation.com/*"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpikePrimeGit</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Loading State -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Setup Screen (No Client ID) -->
+  <div id="setup-screen" class="screen hidden">
+    <div class="header">
+      <h1>🧱 SpikePrimeGit</h1>
+      <p class="subtitle">Sync SPIKE Prime to GitHub</p>
+    </div>
+
+    <div class="content">
+      <div class="info-box">
+        <h3>Setup Required</h3>
+        <p>To use SpikePrimeGit, you need to create a GitHub App.</p>
+      </div>
+
+      <div class="form-section">
+        <h3>Step 1: Get Redirect URI</h3>
+        <p>Copy this URL - you'll need it for GitHub:</p>
+        <div class="copy-box">
+          <input type="text" id="redirect-uri" readonly>
+          <button id="copy-redirect-btn" class="btn-secondary">Copy</button>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Step 2: Create GitHub OAuth App</h3>
+        <ol class="instructions">
+          <li>Go to <a href="https://github.com/settings/developers" target="_blank">GitHub Developer Settings</a></li>
+          <li>Click "OAuth Apps" → "New OAuth App"</li>
+          <li>Set "Authorization callback URL" to the URI above</li>
+          <li>Fill in Application name and Homepage URL (any URL)</li>
+          <li>Click "Register application"</li>
+          <li>Copy the Client ID</li>
+          <li>Click "Generate a new client secret" and copy it</li>
+        </ol>
+      </div>
+
+      <div class="form-section">
+        <h3>Step 3: Enter Credentials</h3>
+        <input type="text" id="client-id-input" placeholder="Client ID" style="margin-bottom: 8px;">
+        <input type="password" id="client-secret-input" placeholder="Client Secret">
+        <button id="save-client-id-btn" class="btn-primary">Save & Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Not Connected Screen -->
+  <div id="not-connected-screen" class="screen hidden">
+    <div class="header">
+      <h1>🧱 SpikePrimeGit</h1>
+      <p class="subtitle">Sync SPIKE Prime to GitHub</p>
+    </div>
+
+    <div class="content">
+      <div class="status-box disconnected">
+        <div class="status-icon">⚠️</div>
+        <div class="status-text">Not Connected</div>
+      </div>
+
+      <p class="help-text">Connect to GitHub to start syncing your SPIKE Prime projects.</p>
+
+      <div class="info-box" style="margin-bottom: 16px;">
+        <h4 style="margin-bottom: 8px; font-size: 14px;">OAuth Callback URL</h4>
+        <p style="font-size: 12px; margin-bottom: 8px; color: #6b7280;">Use this URL in your GitHub OAuth App settings:</p>
+        <div class="copy-box">
+          <input type="text" id="callback-url-display" readonly style="font-size: 11px;">
+          <button id="copy-callback-btn" class="btn-secondary" style="padding: 6px 12px; font-size: 12px;">Copy</button>
+        </div>
+      </div>
+
+      <button id="connect-btn" class="btn-primary">Connect to GitHub</button>
+
+      <div class="links">
+        <a href="#" id="reconfigure-link">Reconfigure OAuth App</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connected Screen -->
+  <div id="connected-screen" class="screen hidden">
+    <div class="header">
+      <h1>🧱 SpikePrimeGit</h1>
+      <div class="user-info">
+        <img id="user-avatar" class="avatar" src="" alt="User">
+        <span id="user-name">Loading...</span>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="status-box connected">
+        <div class="status-icon">✓</div>
+        <div class="status-text">Connected to GitHub</div>
+      </div>
+
+      <!-- Repository Selection -->
+      <div class="form-section">
+        <label for="repo-select">Repository</label>
+        <select id="repo-select" class="select-input">
+          <option value="">Loading repositories...</option>
+        </select>
+        <button id="refresh-repos-btn" class="btn-icon" title="Refresh repositories">↻</button>
+      </div>
+
+      <!-- Branch Selection -->
+      <div class="form-section">
+        <label for="branch-select">Branch</label>
+        <select id="branch-select" class="select-input">
+          <option value="">Select repository first</option>
+        </select>
+      </div>
+
+      <!-- Project Path -->
+      <div class="form-section">
+        <label for="project-path">Project Path</label>
+        <input type="text" id="project-path" class="text-input" placeholder="projects/">
+        <small>Path in repository where projects will be saved</small>
+      </div>
+
+      <!-- Auto-Sync Toggle -->
+      <div class="form-section" style="margin-top: 20px; padding: 16px; background: #f9fafb; border-radius: 8px;">
+        <label style="display: flex; align-items: center; cursor: pointer;">
+          <input type="checkbox" id="auto-sync-toggle" style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
+          <span style="font-weight: 600; font-size: 14px;">⚡ Enable Auto-Sync</span>
+        </label>
+        <p style="margin: 8px 0 0 28px; font-size: 12px; color: #6b7280; line-height: 1.5;">
+          Automatically upload to GitHub every time you save your project in SPIKE Prime
+        </p>
+      </div>
+
+      <!-- Manual Upload Section -->
+      <div class="form-section">
+        <h3>Upload Project</h3>
+        <p style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+          Download your project from SPIKE Prime, then upload it here to sync to GitHub.
+        </p>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="file" id="file-upload" accept=".llsp" style="flex: 1;" />
+          <button id="upload-sync-btn" class="btn-primary" style="white-space: nowrap;">Upload & Sync</button>
+        </div>
+      </div>
+
+      <!-- Sync History -->
+      <div class="form-section">
+        <h3>Recent Syncs</h3>
+        <div id="sync-history" class="sync-history">
+          <p class="empty-state">No syncs yet</p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions">
+        <button id="save-settings-btn" class="btn-primary">Save Settings</button>
+        <button id="disconnect-btn" class="btn-secondary">Disconnect</button>
+      </div>
+
+      <div class="links">
+        <a href="https://github.com" target="_blank">View on GitHub</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div id="error-message" class="error-message hidden"></div>
+
+  <!-- Success Message -->
+  <div id="success-message" class="success-message hidden"></div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>
