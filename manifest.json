@@ -3,6 +3,8 @@
   "name": "SpikePrimeGit",
   "version": "1.0.0",
   "description": "Sync your LEGO SPIKE Prime projects directly to GitHub repositories",
+  "author": "Varun Mehta",
+  "homepage_url": "https://github.com/varunmehta/spike-prime-git",
   "permissions": [
     "storage",
     "identity",
@@ -11,8 +13,7 @@
   "host_permissions": [
     "https://spike.legoeducation.com/*",
     "https://api.github.com/*",
-    "https://github.com/*",
-    "https://spikeprimegit-auth.spikeprimegit.workers.dev/*"
+    "https://github.com/*"
   ],
   "background": {
     "service_worker": "background/service-worker.js",
@@ -25,6 +26,7 @@
         "https://spike.legoeducation.com/*"
       ],
       "js": [
+        "utils/logger.js",
         "content/spike-interceptor.js"
       ],
       "run_at": "document_start",
@@ -37,6 +39,7 @@
         "https://spike.legoeducation.com/*"
       ],
       "js": [
+        "utils/logger.js",
         "content/ui-injector.js",
         "content/content-script.js"
       ],

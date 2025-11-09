@@ -63,34 +63,24 @@ const messageHandlers = {
     }
   },
 
-  // Get list of user repositories
-  // For GitHub Apps: Only returns repositories the user granted access to
-  // For OAuth Apps: Returns all user repositories
+  // Get list of repositories accessible via GitHub App installation
+  // Only returns repositories the user explicitly granted access to
   GET_REPOS: async () => {
     try {
-      // First try to get accessible repositories (GitHub App)
-      const accessibleRepos = await auth.getAccessibleRepositories();
+      // Get repositories from GitHub App installation
+      const repos = await api.listUserRepos();
 
-      if (accessibleRepos.length > 0) {
-        // GitHub App - user has selected specific repositories
-        console.log('[SpikePrimeGit] Using GitHub App accessible repositories:', accessibleRepos.length);
+      if (repos.length === 0) {
+        console.warn('[SpikePrimeGit] No repositories in installation');
         return {
           success: true,
-          repos: accessibleRepos.map(repo => ({
-            full_name: repo.full_name,
-            name: repo.name,
-            owner: repo.owner.login,
-            private: repo.private,
-            default_branch: repo.default_branch,
-            updated_at: repo.updated_at
-          })),
-          source: 'github_app' // Indicates repository-level access
+          repos: [],
+          message: 'No repositories found. Please add repositories to your SpikePrimeGit installation.',
+          installUrl: 'https://github.com/apps/spikeprimegit'
         };
       }
 
-      // Fallback to all user repos (OAuth App)
-      console.log('[SpikePrimeGit] Using user repositories (OAuth App)');
-      const repos = await api.listUserRepos();
+      console.log('[SpikePrimeGit] Found', repos.length, 'installation repositories');
       return {
         success: true,
         repos: repos.map(repo => ({
@@ -100,11 +90,20 @@ const messageHandlers = {
           private: repo.private,
           default_branch: repo.default_branch,
           updated_at: repo.updated_at
-        })),
-        source: 'oauth_app' // Indicates user-level access
+        }))
       };
     } catch (error) {
       console.error('[SpikePrimeGit] Get repos failed:', error);
+
+      // Provide helpful error messages
+      if (error.message.includes('No installation found')) {
+        return {
+          success: false,
+          error: 'SpikePrimeGit app not installed. Please install it to use this extension.',
+          installUrl: 'https://github.com/apps/spikeprimegit/installations/new'
+        };
+      }
+
       return { success: false, error: error.message };
     }
   },
@@ -128,9 +127,14 @@ const messageHandlers = {
   },
 
   // Push SPIKE project to GitHub
-  PUSH_PROJECT: async ({ projectName, zipContent, repository, branch }) => {
+  PUSH_PROJECT: async ({ projectName, zipContent, repository, branch, commitMessage }) => {
     try {
       console.log('[SpikePrimeGit] Pushing project:', projectName);
+
+      // Validate commit message is provided
+      if (!commitMessage || !commitMessage.trim()) {
+        return { success: false, error: 'Commit message is required' };
+      }
 
       // Convert base64 back to ArrayBuffer if needed
       let arrayBuffer;
@@ -150,7 +154,8 @@ const messageHandlers = {
         repository,
         branch,
         projectName,
-        zipContent: arrayBuffer
+        zipContent: arrayBuffer,
+        commitMessage: commitMessage.trim()
       });
 
       return {
@@ -186,7 +191,7 @@ const messageHandlers = {
           selectedRepo: null,
           selectedBranch: null,
           projectPath: 'projects/',
-          autoSync: false
+          syncInterval: 15 // Default to 15 minutes
         }
       };
     } catch (error) {
@@ -266,7 +271,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         selectedRepo: null,
         selectedBranch: null,
         projectPath: 'projects/',
-        autoSync: false
+        syncInterval: 15 // Default to 15 minutes
       }
     });
   }

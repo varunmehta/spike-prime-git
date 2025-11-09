@@ -14,6 +14,8 @@ const screens = {
 const elements = {
   redirectUri: document.getElementById('redirect-uri'),
   copyRedirectBtn: document.getElementById('copy-redirect-btn'),
+  callbackUrlDisplay: document.getElementById('callback-url-display'),
+  copyCallbackBtn: document.getElementById('copy-callback-btn'),
   clientIdInput: document.getElementById('client-id-input'),
   clientSecretInput: document.getElementById('client-secret-input'),
   saveClientIdBtn: document.getElementById('save-client-id-btn'),
@@ -24,15 +26,13 @@ const elements = {
   repoSelect: document.getElementById('repo-select'),
   branchSelect: document.getElementById('branch-select'),
   projectPath: document.getElementById('project-path'),
-  autoSyncToggle: document.getElementById('auto-sync-toggle'),
+  syncInterval: document.getElementById('sync-interval'),
   refreshReposBtn: document.getElementById('refresh-repos-btn'),
   saveSettingsBtn: document.getElementById('save-settings-btn'),
   disconnectBtn: document.getElementById('disconnect-btn'),
   syncHistory: document.getElementById('sync-history'),
   errorMessage: document.getElementById('error-message'),
-  successMessage: document.getElementById('success-message'),
-  fileUpload: document.getElementById('file-upload'),
-  uploadSyncBtn: document.getElementById('upload-sync-btn')
+  successMessage: document.getElementById('success-message')
 };
 
 // State
@@ -73,11 +73,16 @@ function showSuccess(message) {
 }
 
 /**
- * Send message to background script
+ * Send message to background script with timeout
  */
-async function sendMessage(type, data = {}) {
+async function sendMessage(type, data = {}, timeoutMs = 5000) {
   return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(`Message ${type} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
     chrome.runtime.sendMessage({ type, data }, response => {
+      clearTimeout(timeout);
       if (chrome.runtime.lastError) {
         reject(new Error(chrome.runtime.lastError.message));
       } else {
@@ -94,15 +99,17 @@ async function initialize() {
   console.log('[SpikePrimeGit Popup] Initializing...');
 
   try {
-    // Get redirect URI
+    // Get redirect URI for both setup and not-connected screens
     const redirectUriResponse = await sendMessage('GET_REDIRECT_URI');
-    if (redirectUriResponse.success) {
-      elements.redirectUri.value = redirectUriResponse.redirectUri;
+    if (redirectUriResponse && redirectUriResponse.success) {
+      const uri = redirectUriResponse.redirectUri;
+      elements.redirectUri.value = uri;
+      elements.callbackUrlDisplay.value = uri;
     }
 
     // Check if client ID is configured
     const clientIdResponse = await sendMessage('GET_CLIENT_ID');
-    const hasClientId = clientIdResponse.success && clientIdResponse.clientId;
+    const hasClientId = clientIdResponse && clientIdResponse.success && clientIdResponse.clientId;
 
     if (!hasClientId) {
       // Show setup screen
@@ -113,7 +120,7 @@ async function initialize() {
     // Check connection status
     const connectionResponse = await sendMessage('CHECK_CONNECTION');
 
-    if (connectionResponse.connected) {
+    if (connectionResponse && connectionResponse.connected) {
       // Show connected screen
       await showConnectedScreen(connectionResponse.user);
     } else {
@@ -124,7 +131,8 @@ async function initialize() {
   } catch (error) {
     console.error('[SpikePrimeGit Popup] Initialization error:', error);
     showError('Failed to initialize: ' + error.message);
-    showScreen('notConnected');
+    // Always show a screen even on error - default to setup if we can't determine state
+    showScreen('setup');
   }
 }
 
@@ -163,8 +171,11 @@ async function loadSettings() {
       // Set project path
       elements.projectPath.value = currentSettings.projectPath || 'projects/';
 
-      // Set auto-sync toggle
-      elements.autoSyncToggle.checked = currentSettings.autoSync || false;
+      // Set sync interval (default 15 minutes)
+      elements.syncInterval.value = currentSettings.syncInterval || 15;
+
+      // Commit message is always empty - user must enter fresh message
+      // elements.commitMessage.value = '';
 
       // Selected repo will be set after repos are loaded
     }
@@ -186,6 +197,13 @@ async function loadRepositories() {
     if (response.success) {
       currentRepos = response.repos;
 
+      // Check if no repositories found
+      if (response.repos.length === 0) {
+        elements.repoSelect.innerHTML = '<option value="">No repositories available</option>';
+        showInstallationHelp(response.installUrl || 'https://github.com/apps/spikeprimegit');
+        return;
+      }
+
       elements.repoSelect.innerHTML = '<option value="">Select a repository</option>';
 
       response.repos.forEach(repo => {
@@ -195,21 +213,68 @@ async function loadRepositories() {
         elements.repoSelect.appendChild(option);
       });
 
-      // Set selected repo if available
-      if (currentSettings.selectedRepo) {
+      // Auto-select if only one repository
+      if (response.repos.length === 1) {
+        elements.repoSelect.value = response.repos[0].full_name;
+        await loadBranches(response.repos[0].full_name);
+      } else if (currentSettings.selectedRepo) {
+        // Set previously selected repo if available
         elements.repoSelect.value = currentSettings.selectedRepo;
         await loadBranches(currentSettings.selectedRepo);
       }
 
       elements.repoSelect.disabled = false;
     } else {
-      throw new Error(response.error || 'Failed to load repositories');
+      // Check if this is an installation error
+      if (response.installUrl) {
+        elements.repoSelect.innerHTML = '<option value="">No repositories available</option>';
+        showInstallationHelp(response.installUrl);
+        showError(response.error || 'GitHub App not installed');
+      } else {
+        throw new Error(response.error || 'Failed to load repositories');
+      }
     }
   } catch (error) {
     console.error('[SpikePrimeGit Popup] Error loading repositories:', error);
     showError('Failed to load repositories: ' + error.message);
     elements.repoSelect.innerHTML = '<option value="">Error loading repositories</option>';
   }
+}
+
+/**
+ * Show help UI when no repositories are in the installation
+ */
+function showInstallationHelp(installUrl) {
+  // Remove any existing help box
+  const existingHelp = document.getElementById('installation-help');
+  if (existingHelp) {
+    existingHelp.remove();
+  }
+
+  const helpDiv = document.createElement('div');
+  helpDiv.id = 'installation-help';
+  helpDiv.className = 'info-box';
+  helpDiv.style.marginTop = '16px';
+  helpDiv.innerHTML = `
+    <h3>⚠️ No Repository Access</h3>
+    <p style="margin: 12px 0;">SpikePrimeGit doesn't have access to any repositories yet.</p>
+    <p style="margin: 12px 0; font-size: 13px; color: #4a5568;">
+      You need to add at least one repository to your SpikePrimeGit installation.
+    </p>
+    <a href="${installUrl}"
+       target="_blank"
+       class="btn-primary"
+       style="display: inline-block; margin-top: 8px; text-decoration: none; text-align: center;">
+      Add Repository Access
+    </a>
+    <p style="font-size: 12px; margin-top: 12px; color: #6b7280;">
+      After adding repository access, click the refresh button (↻) above to reload.
+    </p>
+  `;
+
+  // Insert after repo select form section
+  const repoFormSection = elements.repoSelect.closest('.form-section');
+  repoFormSection.parentNode.insertBefore(helpDiv, repoFormSection.nextSibling);
 }
 
 /**
@@ -304,11 +369,18 @@ async function saveSettings() {
     elements.saveSettingsBtn.disabled = true;
     elements.saveSettingsBtn.textContent = 'Saving...';
 
+    // Validate sync interval
+    const syncInterval = parseInt(elements.syncInterval.value);
+    if (isNaN(syncInterval) || syncInterval < 1 || syncInterval > 120) {
+      showError('Sync interval must be between 1 and 120 minutes');
+      return;
+    }
+
     const settings = {
       selectedRepo: elements.repoSelect.value,
       selectedBranch: elements.branchSelect.value,
       projectPath: elements.projectPath.value,
-      autoSync: elements.autoSyncToggle.checked
+      syncInterval: syncInterval
     };
 
     const response = await sendMessage('SAVE_SETTINGS', { settings });
@@ -317,10 +389,13 @@ async function saveSettings() {
       currentSettings = settings;
       showSuccess('Settings saved successfully!');
 
-      // Notify content script to update UI
+      // Notify content script to update UI and sync interval
       const tabs = await chrome.tabs.query({ url: 'https://spike.legoeducation.com/*' });
       tabs.forEach(tab => {
-        chrome.tabs.sendMessage(tab.id, { type: 'UPDATE_UI' });
+        chrome.tabs.sendMessage(tab.id, {
+          type: 'UPDATE_SETTINGS',
+          settings: settings
+        });
       });
     } else {
       throw new Error(response.error || 'Failed to save settings');
@@ -438,8 +513,25 @@ async function copyRedirectUri() {
   }
 }
 
+/**
+ * Copy callback URL to clipboard
+ */
+async function copyCallbackUrl() {
+  try {
+    await navigator.clipboard.writeText(elements.callbackUrlDisplay.value);
+    elements.copyCallbackBtn.textContent = 'Copied!';
+    setTimeout(() => {
+      elements.copyCallbackBtn.textContent = 'Copy';
+    }, 2000);
+  } catch (error) {
+    console.error('[SpikePrimeGit Popup] Copy error:', error);
+    showError('Failed to copy to clipboard');
+  }
+}
+
 // Event Listeners
 elements.copyRedirectBtn.addEventListener('click', copyRedirectUri);
+elements.copyCallbackBtn.addEventListener('click', copyCallbackUrl);
 elements.saveClientIdBtn.addEventListener('click', saveClientId);
 elements.connectBtn.addEventListener('click', connectToGitHub);
 elements.disconnectBtn.addEventListener('click', disconnect);

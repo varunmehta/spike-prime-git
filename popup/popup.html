@@ -16,7 +16,7 @@
   <!-- Setup Screen (No Client ID) -->
   <div id="setup-screen" class="screen hidden">
     <div class="header">
-      <h1>🧱 SpikePrimeGit</h1>
+      <h1><img src="../assets/icons/icon48.png" class="header-icon"/> SpikePrimeGit</h1>
       <p class="subtitle">Sync SPIKE Prime to GitHub</p>
     </div>
 
@@ -60,7 +60,7 @@
   <!-- Not Connected Screen -->
   <div id="not-connected-screen" class="screen hidden">
     <div class="header">
-      <h1>🧱 SpikePrimeGit</h1>
+      <h1><img src="../assets/icons/icon48.png" class="header-icon"/> SpikePrimeGit</h1>
       <p class="subtitle">Sync SPIKE Prime to GitHub</p>
     </div>
 
@@ -92,7 +92,7 @@
   <!-- Connected Screen -->
   <div id="connected-screen" class="screen hidden">
     <div class="header">
-      <h1>🧱 SpikePrimeGit</h1>
+      <h1><img src="../assets/icons/icon48.png" class="header-icon"/> SpikePrimeGit</h1>
       <div class="user-info">
         <img id="user-avatar" class="avatar" src="" alt="User">
         <span id="user-name">Loading...</span>
@@ -129,26 +129,15 @@
         <small>Path in repository where projects will be saved</small>
       </div>
 
-      <!-- Auto-Sync Toggle -->
+      <!-- Sync Prompt Interval -->
       <div class="form-section" style="margin-top: 20px; padding: 16px; background: #f9fafb; border-radius: 8px;">
-        <label style="display: flex; align-items: center; cursor: pointer;">
-          <input type="checkbox" id="auto-sync-toggle" style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
-          <span style="font-weight: 600; font-size: 14px;">⚡ Enable Auto-Sync</span>
-        </label>
-        <p style="margin: 8px 0 0 28px; font-size: 12px; color: #6b7280; line-height: 1.5;">
-          Automatically upload to GitHub every time you save your project in SPIKE Prime
+        <label for="sync-interval" style="font-weight: 600; font-size: 14px;">⏰ Sync Reminder Interval</label>
+        <p style="margin: 8px 0; font-size: 12px; color: #6b7280; line-height: 1.5;">
+          Get reminded to push your changes to GitHub after working for a while
         </p>
-      </div>
-
-      <!-- Manual Upload Section -->
-      <div class="form-section">
-        <h3>Upload Project</h3>
-        <p style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-          Download your project from SPIKE Prime, then upload it here to sync to GitHub.
-        </p>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <input type="file" id="file-upload" accept=".llsp" style="flex: 1;" />
-          <button id="upload-sync-btn" class="btn-primary" style="white-space: nowrap;">Upload & Sync</button>
+        <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
+          <input type="number" id="sync-interval" class="text-input" min="1" max="120" value="15" style="width: 80px;">
+          <span style="font-size: 14px; color: #4a5568;">minutes</span>
         </div>
       </div>
 

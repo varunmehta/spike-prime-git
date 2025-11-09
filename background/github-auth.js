@@ -1,6 +1,6 @@
 /**
- * GitHub OAuth Authentication Module
- * Implements OAuth flow for secure authentication
+ * GitHub App Authentication Module
+ * Implements GitHub App installation flow with repository-specific access
  */
 
 import { generateState } from '../lib/pkce.js';
@@ -8,12 +8,17 @@ import { generateState } from '../lib/pkce.js';
 const STORAGE_KEYS = {
   TOKENS: 'github_tokens',
   AUTH_STATE: 'auth_state',
+  INSTALLATION: 'github_installation',
   CLIENT_ID: 'github_client_id',
   CLIENT_SECRET: 'github_client_secret'
 };
 
 const TOKEN_REFRESH_THRESHOLD = 5 * 60 * 1000;
-const GITHUB_CLIENT_ID = 'SET_ME_UP';
+
+// GitHub App credentials (to be replaced with actual values)
+// After creating GitHub App at https://github.com/settings/apps/new
+const GITHUB_APP_CLIENT_ID = 'Iv23li5u3EhSyZ8px0hQ'; // GitHub App Client ID (Iv1.xxxx)
+const GITHUB_APP_CLIENT_SECRET = '987c47405aff44323aa2fe7f1c0fb1251403866f'; // GitHub App Client Secret
 
 export function getRedirectURI() {
   return chrome.identity.getRedirectURL();
@@ -53,7 +58,8 @@ export async function getTokens() {
 export async function clearAuth() {
   await chrome.storage.local.remove([
     STORAGE_KEYS.TOKENS,
-    STORAGE_KEYS.AUTH_STATE
+    STORAGE_KEYS.AUTH_STATE,
+    STORAGE_KEYS.INSTALLATION
   ]);
 }
 
@@ -72,14 +78,21 @@ export async function isAuthenticated() {
 
 /**
  * Start GitHub App authentication flow with repository selection
- * @returns {Promise<Object>} Token data
+ * User must install the GitHub App to specific repositories first
+ * @returns {Promise<Object>} Token data and installation info
  * @throws {Error} If authentication fails
  */
 export async function authenticate() {
   // Get stored client ID
   const clientId = await getClientId();
-  if (!clientId) {
-    throw new Error('No Client ID configured. Please configure OAuth credentials first.');
+
+  // Check if credentials are configured
+  if (!clientId || clientId === 'SET_ME_UP') {
+    throw new Error(
+      'GitHub App not configured. ' +
+      'Please create a GitHub App at https://github.com/settings/apps/new ' +
+      'and update the credentials in the extension popup, or edit background/github-auth.js'
+    );
   }
 
   // Generate state for CSRF protection
@@ -91,11 +104,19 @@ export async function authenticate() {
   });
 
   const redirectUri = getRedirectURI();
+
+  // GitHub App OAuth flow - no scope needed, permissions defined in app
   const authUrl = new URL('https://github.com/login/oauth/authorize');
   authUrl.searchParams.set('client_id', clientId);
   authUrl.searchParams.set('redirect_uri', redirectUri);
   authUrl.searchParams.set('state', state);
-  authUrl.searchParams.set('scope', 'repo');
+  // Note: No scope parameter - GitHub App permissions come from app configuration
+
+  console.log('[SpikePrimeGit Auth] Starting OAuth flow:', {
+    clientId: clientId.substring(0, 8) + '...',
+    redirectUri,
+    authUrl: authUrl.toString()
+  });
 
   try {
     const responseUrl = await chrome.identity.launchWebAuthFlow({
@@ -123,11 +144,37 @@ export async function authenticate() {
       throw new Error('State mismatch - possible CSRF attack');
     }
 
-    // Exchange code for token via backend
+    // Exchange code for token
     const tokens = await exchangeCodeForToken(code, redirectUri);
 
     // Store tokens
     await storeTokens(tokens);
+
+    // Get GitHub App installations to find which repositories user granted access to
+    const installations = await getInstallations(tokens.accessToken);
+
+    if (installations.length === 0) {
+      // Clear tokens since installation is required
+      await clearAuth();
+      throw new Error(
+        'No GitHub App installations found. ' +
+        'Please complete the GitHub App installation by selecting repositories. ' +
+        'Go to GitHub settings and install the app to at least one repository.'
+      );
+    }
+
+    // Store the first installation (users typically have one)
+    const installation = installations[0];
+    await chrome.storage.local.set({
+      [STORAGE_KEYS.INSTALLATION]: {
+        id: installation.id,
+        account: installation.account,
+        repository_selection: installation.repository_selection,
+        created_at: installation.created_at
+      }
+    });
+
+    console.log('[SpikePrimeGit Auth] Authenticated with installation:', installation.id);
 
     await chrome.storage.local.remove([STORAGE_KEYS.AUTH_STATE]);
     return tokens;
@@ -297,26 +344,31 @@ export async function getAuthenticatedUser() {
 }
 
 /**
- * Get GitHub Client ID
+ * Get GitHub App Client ID
  * @returns {Promise<string>} Client ID
  */
 export async function getClientId() {
-  // Try to get from storage first
+  // Try to get from storage first (for user-configured apps)
   const result = await chrome.storage.local.get(STORAGE_KEYS.CLIENT_ID);
   if (result[STORAGE_KEYS.CLIENT_ID]) {
     return result[STORAGE_KEYS.CLIENT_ID];
   }
-  // Fallback to hardcoded (for backward compatibility)
-  return GITHUB_CLIENT_ID;
+  // Fallback to hardcoded GitHub App client ID
+  return GITHUB_APP_CLIENT_ID;
 }
 
 /**
- * Get GitHub Client Secret
+ * Get GitHub App Client Secret
  * @returns {Promise<string|null>} Client Secret or null
  */
 export async function getClientSecret() {
+  // Try to get from storage first (for user-configured apps)
   const result = await chrome.storage.local.get(STORAGE_KEYS.CLIENT_SECRET);
-  return result[STORAGE_KEYS.CLIENT_SECRET] || null;
+  if (result[STORAGE_KEYS.CLIENT_SECRET]) {
+    return result[STORAGE_KEYS.CLIENT_SECRET];
+  }
+  // Fallback to hardcoded GitHub App client secret
+  return GITHUB_APP_CLIENT_SECRET;
 }
 
 /**
@@ -332,27 +384,80 @@ export async function setCredentials(clientId, clientSecret) {
 }
 
 /**
- * Get list of repositories accessible to the GitHub App installation
- * This shows which repositories the user granted access to
- * @returns {Promise<Array>} List of accessible repositories
+ * Get user's GitHub App installations
+ * @param {string} token - User access token
+ * @returns {Promise<Array>} List of installations
  */
-export async function getAccessibleRepositories() {
-  const token = await getValidAccessToken();
-
-  const response = await fetch('https://api.github.com/installation/repositories', {
+async function getInstallations(token) {
+  const response = await fetch('https://api.github.com/user/installations', {
     headers: {
       'Authorization': `Bearer ${token}`,
-      'Accept': 'application/vnd.github+json'
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28'
     }
   });
 
   if (!response.ok) {
-    // If this endpoint fails, it might be an OAuth App token instead of GitHub App
-    // Fallback to user repos
-    console.warn('[SpikePrimeGit Auth] Not a GitHub App token, using user repos instead');
-    return [];
+    throw new Error(`Failed to get installations: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.installations || [];
+}
+
+/**
+ * Get repositories accessible via GitHub App installation
+ * Only returns repositories user explicitly granted access to
+ * @returns {Promise<Array>} List of accessible repositories
+ */
+export async function getInstallationRepositories() {
+  const token = await getValidAccessToken();
+
+  // Get stored installation
+  const result = await chrome.storage.local.get(STORAGE_KEYS.INSTALLATION);
+  const installation = result[STORAGE_KEYS.INSTALLATION];
+
+  if (!installation) {
+    throw new Error('No installation found. Please authenticate first.');
+  }
+
+  // Get repositories for this installation
+  const response = await fetch(
+    `https://api.github.com/user/installations/${installation.id}/repositories`,
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28'
+      }
+    }
+  );
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error(
+        'Installation not found. Please reinstall the SpikePrimeGit app at ' +
+        'https://github.com/apps/spikeprimegit/installations/new'
+      );
+    }
+    throw new Error(`Failed to get installation repositories: ${response.status}`);
   }
 
   const data = await response.json();
   return data.repositories || [];
+}
+
+/**
+ * Get list of repositories accessible to the GitHub App installation
+ * This shows which repositories the user granted access to
+ * @returns {Promise<Array>} List of accessible repositories
+ * @deprecated Use getInstallationRepositories() instead
+ */
+export async function getAccessibleRepositories() {
+  try {
+    return await getInstallationRepositories();
+  } catch (error) {
+    console.warn('[SpikePrimeGit Auth] Failed to get installation repositories:', error);
+    return [];
+  }
 }

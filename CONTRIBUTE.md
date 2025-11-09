@@ -2,6 +2,8 @@
 
 Thank you for your interest in contributing to SpikePrimeGit! This guide will help you get started with development.
 
+> The project was built using [`claude code`](https://www.claude.com/product/claude-code) as a coding partner
+
 ## Table of Contents
 
 - [Development Setup](#development-setup)
@@ -27,15 +29,15 @@ Thank you for your interest in contributing to SpikePrimeGit! This guide will he
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/spikeprimegit.git
-   cd spikeprimegit
+   git clone https://github.com/varunmehta/spike-prime-git.git
+   cd spike-prime-git
    ```
 
 2. **Load extension in Chrome:**
    - Open Chrome and navigate to `chrome://extensions/`
    - Enable **"Developer mode"** (toggle in top-right corner)
    - Click **"Load unpacked"**
-   - Select the `brickhub/` directory
+   - Select the `/spike-prime-git` directory
 
 3. **Configure OAuth:**
    - Create a GitHub OAuth App (see README.md for details)

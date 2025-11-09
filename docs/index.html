@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpikePrimeGit - Documentation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <h1>🧱 SpikePrimeGit</h1>
+        <p class="tagline">Sync your LEGO SPIKE Prime projects to GitHub</p>
+      </div>
+      <nav>
+        <a href="#overview">Overview</a>
+        <a href="#setup">Setup</a>
+        <a href="#usage">How to Use</a>
+        <a href="#troubleshooting">Troubleshooting</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Overview Section -->
+    <section id="overview" class="section">
+      <h2>📖 What is SpikePrimeGit?</h2>
+      <div class="content-box">
+        <p>SpikePrimeGit is a Chrome extension that helps students and coaches automatically save LEGO SPIKE Prime projects to GitHub. This makes it easy to:</p>
+        <ul class="feature-list">
+          <li><strong>Version Control:</strong> Keep track of changes to your projects over time</li>
+          <li><strong>Backup:</strong> Never lose your hard work - everything is safely stored in the cloud</li>
+          <li><strong>Collaboration:</strong> Share projects with teammates and coaches</li>
+          <li><strong>Portfolio:</strong> Build a portfolio of your robotics projects</li>
+        </ul>
+      </div>
+
+      <div class="info-box">
+        <h3>📋 What You'll Need</h3>
+        <ul>
+          <li>Google Chrome browser</li>
+          <li>A GitHub account (free)</li>
+          <li>Access to LEGO SPIKE Prime software</li>
+          <li>About 10-15 minutes for setup</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Setup Section -->
+    <section id="setup" class="section">
+      <h2>⚙️ Setup Guide</h2>
+      <p class="section-intro">Follow these steps carefully to set up SpikePrimeGit. Don't worry - you only need to do this once!</p>
+
+      <!-- Step 1 -->
+      <div class="step">
+        <div class="step-header">
+          <span class="step-number">1</span>
+          <h3>Install the Chrome Extension</h3>
+        </div>
+        <div class="step-content">
+          <ol>
+            <li>Download the SpikePrimeGit extension files</li>
+            <li>Open Chrome and go to <code>chrome://extensions/</code></li>
+            <li>Turn on "Developer mode" (toggle in top-right corner)</li>
+            <li>Click "Load unpacked" and select the extension folder</li>
+            <li>You should see the SpikePrimeGit icon appear in your Chrome toolbar</li>
+          </ol>
+          <div class="screenshot-placeholder">
+            <p>📸 Screenshot: Chrome Extensions Page</p>
+            <p class="placeholder-hint">Add screenshot of chrome://extensions with Developer mode enabled</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step">
+        <div class="step-header">
+          <span class="step-number">2</span>
+          <h3>Create a GitHub Account</h3>
+        </div>
+        <div class="step-content">
+          <p>If you don't have a GitHub account yet:</p>
+          <ol>
+            <li>Go to <a href="https://github.com/signup" target="_blank">github.com/signup</a></li>
+            <li>Enter your email address and create a password</li>
+            <li>Choose a username (this will be visible to others)</li>
+            <li>Verify your email address</li>
+          </ol>
+          <div class="tip-box">
+            <strong>💡 Tip for Coaches:</strong> Consider creating a team organization on GitHub to manage student projects in one place.
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step">
+        <div class="step-header">
+          <span class="step-number">3</span>
+          <h3>Create a GitHub Repository</h3>
+        </div>
+        <div class="step-content">
+          <p>A repository is like a folder where your projects will be saved.</p>
+          <ol>
+            <li>Go to <a href="https://github.com/new" target="_blank">github.com/new</a></li>
+            <li>Enter a repository name (e.g., "spike-prime-projects")</li>
+            <li>Choose "Public" or "Private" (Private keeps your code hidden)</li>
+            <li>Check "Add a README file"</li>
+            <li>Click "Create repository"</li>
+          </ol>
+          <div class="screenshot-placeholder">
+            <p>📸 Screenshot: Creating a New Repository</p>
+            <p class="placeholder-hint">Add screenshot of GitHub new repository page</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="step">
+        <div class="step-header">
+          <span class="step-number">4</span>
+          <h3>Create a GitHub OAuth App</h3>
+        </div>
+        <div class="step-content">
+          <p>This allows the extension to securely connect to your GitHub account.</p>
+          <ol>
+            <li>Click the SpikePrimeGit extension icon in Chrome</li>
+            <li>Copy the "OAuth Callback URL" shown in the popup</li>
+            <li>Go to <a href="https://github.com/settings/developers" target="_blank">GitHub Developer Settings</a></li>
+            <li>Click "OAuth Apps" → "New OAuth App"</li>
+            <li>Fill in the form:
+              <ul>
+                <li><strong>Application name:</strong> SpikePrimeGit</li>
+                <li><strong>Homepage URL:</strong> https://spike.legoeducation.com</li>
+                <li><strong>Authorization callback URL:</strong> Paste the URL you copied earlier</li>
+              </ul>
+            </li>
+            <li>Click "Register application"</li>
+            <li>Copy the <strong>Client ID</strong></li>
+            <li>Click "Generate a new client secret" and copy the <strong>Client Secret</strong></li>
+          </ol>
+          <div class="warning-box">
+            <strong>⚠️ Important:</strong> Keep your Client Secret private! Don't share it with anyone.
+          </div>
+          <div class="screenshot-placeholder">
+            <p>📸 Screenshot: GitHub OAuth App Settings</p>
+            <p class="placeholder-hint">Add screenshot of GitHub OAuth app creation page</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="step">
+        <div class="step-header">
+          <span class="step-number">5</span>
+          <h3>Configure the Extension</h3>
+        </div>
+        <div class="step-content">
+          <ol>
+            <li>Click the SpikePrimeGit extension icon</li>
+            <li>Paste your <strong>Client ID</strong> and <strong>Client Secret</strong></li>
+            <li>Click "Save & Continue"</li>
+            <li>Click "Connect to GitHub"</li>
+            <li>Authorize the application when prompted</li>
+          </ol>
+          <div class="screenshot-placeholder">
+            <p>📸 Screenshot: Extension Setup Screen</p>
+            <p class="placeholder-hint">Add screenshot of the extension setup screen</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6 -->
+      <div class="step">
+        <div class="step-header">
+          <span class="step-number">6</span>
+          <h3>Configure Your Settings</h3>
+        </div>
+        <div class="step-content">
+          <p>Now you're connected! Configure where your projects will be saved:</p>
+          <ol>
+            <li>Select your <strong>Repository</strong> from the dropdown</li>
+            <li>Select a <strong>Branch</strong> (usually "main" or "master")</li>
+            <li>Set a <strong>Project Path</strong> (e.g., "projects/" - this is where files will be saved in your repository)</li>
+            <li>Toggle <strong>Auto-Sync</strong> ON if you want automatic uploads</li>
+            <li>Click "Save Settings"</li>
+          </ol>
+          <div class="screenshot-placeholder">
+            <p>📸 Screenshot: Extension Connected Screen</p>
+            <p class="placeholder-hint">Add screenshot of the connected screen with settings</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="success-box">
+        <h3>🎉 Setup Complete!</h3>
+        <p>You're all set! Your SPIKE Prime projects will now sync to GitHub.</p>
+      </div>
+    </section>
+
+    <!-- Usage Section -->
+    <section id="usage" class="section">
+      <h2>🚀 How to Use SpikePrimeGit</h2>
+      <p class="section-intro">Now that you're set up, here's how to use the extension every day.</p>
+
+      <!-- Auto Sync Method -->
+      <div class="usage-method">
+        <h3>Method 1: Auto-Sync (Recommended)</h3>
+        <div class="content-box">
+          <p>With Auto-Sync enabled, your projects automatically upload to GitHub when you save them in SPIKE Prime.</p>
+          <ol>
+            <li>Open <a href="https://spike.legoeducation.com" target="_blank">SPIKE Prime software</a> in Chrome</li>
+            <li>Work on your project as normal</li>
+            <li>Click "Save" in SPIKE Prime</li>
+            <li>The extension automatically detects the save and uploads to GitHub</li>
+            <li>You'll see a notification when the upload is complete</li>
+          </ol>
+          <div class="tip-box">
+            <strong>💡 Tip:</strong> You don't need to do anything special - just save your project like normal!
+          </div>
+          <div class="screenshot-placeholder">
+            <p>📸 Screenshot: Auto-Sync Notification</p>
+            <p class="placeholder-hint">Add screenshot showing the sync notification in SPIKE Prime</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual Upload Method -->
+      <div class="usage-method">
+        <h3>Method 2: Manual Upload</h3>
+        <div class="content-box">
+          <p>If you prefer manual control, you can upload projects yourself:</p>
+          <ol>
+            <li>In SPIKE Prime, download your project (File → Download)</li>
+            <li>The project will be saved as a .llsp file</li>
+            <li>Click the SpikePrimeGit extension icon</li>
+            <li>Click "Choose File" under "Upload Project"</li>
+            <li>Select your .llsp file</li>
+            <li>Click "Upload & Sync"</li>
+            <li>Wait for the success message</li>
+          </ol>
+          <div class="screenshot-placeholder">
+            <p>📸 Screenshot: Manual Upload Interface</p>
+            <p class="placeholder-hint">Add screenshot of the manual upload section</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Viewing Projects -->
+      <div class="usage-method">
+        <h3>Viewing Your Projects on GitHub</h3>
+        <div class="content-box">
+          <ol>
+            <li>Go to your GitHub repository</li>
+            <li>Navigate to the folder you specified (e.g., "projects/")</li>
+            <li>You'll see all your SPIKE Prime projects listed</li>
+            <li>Click on any project to see when it was last updated</li>
+            <li>Click on the "Commits" to see the history of changes</li>
+          </ol>
+          <div class="screenshot-placeholder">
+            <p>📸 Screenshot: GitHub Repository View</p>
+            <p class="placeholder-hint">Add screenshot of GitHub repository with SPIKE Prime projects</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Syncs -->
+      <div class="usage-method">
+        <h3>Checking Recent Syncs</h3>
+        <div class="content-box">
+          <p>To see your recent uploads:</p>
+          <ol>
+            <li>Click the SpikePrimeGit extension icon</li>
+            <li>Scroll down to "Recent Syncs"</li>
+            <li>You'll see a list of your recent project uploads with timestamps</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- Troubleshooting Section -->
+    <section id="troubleshooting" class="section">
+      <h2>🔧 Troubleshooting</h2>
+
+      <div class="faq">
+        <div class="faq-item">
+          <h3>The extension icon shows a red "!" badge</h3>
+          <p>This means you're not connected to GitHub. Click the extension icon and click "Connect to GitHub" to reconnect.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Auto-sync isn't working</h3>
+          <p>Check these things:</p>
+          <ul>
+            <li>Make sure Auto-Sync is turned ON in the extension settings</li>
+            <li>Make sure you've selected a repository and branch</li>
+            <li>Try refreshing the SPIKE Prime page</li>
+            <li>Check that you're connected (green checkmark in the extension)</li>
+          </ul>
+        </div>
+
+        <div class="faq-item">
+          <h3>I get an error when uploading</h3>
+          <p>Common solutions:</p>
+          <ul>
+            <li>Check your internet connection</li>
+            <li>Make sure the repository and branch still exist on GitHub</li>
+            <li>Try disconnecting and reconnecting to GitHub</li>
+            <li>Check the browser console (F12) for detailed error messages</li>
+          </ul>
+        </div>
+
+        <div class="faq-item">
+          <h3>The OAuth callback URL doesn't work</h3>
+          <p>Make sure you copied the <strong>exact</strong> URL from the extension. It should look like: <code>https://[extension-id].chromiumapp.org/</code></p>
+        </div>
+
+        <div class="faq-item">
+          <h3>I lost my Client Secret</h3>
+          <p>You'll need to generate a new one:</p>
+          <ol>
+            <li>Go to your <a href="https://github.com/settings/developers" target="_blank">GitHub OAuth Apps</a></li>
+            <li>Click on your SpikePrimeGit app</li>
+            <li>Click "Generate a new client secret"</li>
+            <li>Update the credentials in the extension</li>
+          </ol>
+        </div>
+
+        <div class="faq-item">
+          <h3>How do I start over?</h3>
+          <p>To reset the extension:</p>
+          <ol>
+            <li>Click the extension icon</li>
+            <li>Click "Disconnect"</li>
+            <li>Click "Reconfigure OAuth App"</li>
+            <li>Follow the setup steps again</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- For Coaches Section -->
+    <section id="coaches" class="section">
+      <h2>👨‍🏫 Tips for Coaches</h2>
+      <div class="content-box">
+        <h3>Managing Student Projects</h3>
+        <p>Here are some strategies for using SpikePrimeGit with your team:</p>
+
+        <h4>Option 1: Individual Student Repositories</h4>
+        <ul>
+          <li>Each student creates their own GitHub account and repository</li>
+          <li>Pros: Students learn to manage their own code</li>
+          <li>Cons: Harder to monitor all students</li>
+        </ul>
+
+        <h4>Option 2: Team Organization (Recommended)</h4>
+        <ul>
+          <li>Create a GitHub Organization for your team</li>
+          <li>Create one repository per student or per project</li>
+          <li>You (coach) have access to all repositories</li>
+          <li>Pros: Easy to monitor, backup, and manage</li>
+          <li>Cons: Requires initial setup</li>
+        </ul>
+
+        <h4>Best Practices</h4>
+        <ul>
+          <li>Have students name their projects descriptively (e.g., "line-follower-v2")</li>
+          <li>Encourage regular saves to build up project history</li>
+          <li>Review commit history to see student progress over time</li>
+          <li>Use GitHub Issues to give feedback on projects</li>
+          <li>Create a shared repository for team resources and example code</li>
+        </ul>
+
+        <h4>Privacy Considerations</h4>
+        <ul>
+          <li>Students under 13 may need parental permission for GitHub accounts</li>
+          <li>Consider using private repositories for student work</li>
+          <li>Remind students not to include personal information in code comments</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Support Section -->
+    <section id="support" class="section">
+      <h2>💬 Need Help?</h2>
+      <div class="content-box">
+        <p>If you're still having trouble:</p>
+        <ul>
+          <li>Check the browser console (F12) for detailed error messages</li>
+          <li>Ask your coach or teacher for help</li>
+          <li>Report issues on the GitHub repository</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>SpikePrimeGit - Made for LEGO SPIKE Prime enthusiasts</p>
+      <p>Not affiliated with LEGO Education</p>
+    </div>
+  </footer>
+</body>
+</html>

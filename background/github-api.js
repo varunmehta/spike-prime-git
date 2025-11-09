@@ -1,9 +1,10 @@
 /**
  * GitHub API Integration Module
  * Handles all GitHub API operations for repository management
+ * Enforces repository-specific access via GitHub App installations
  */
 
-import { getValidAccessToken } from './github-auth.js';
+import { getValidAccessToken, getInstallationRepositories } from './github-auth.js';
 
 const GITHUB_API_BASE = 'https://api.github.com';
 
@@ -54,25 +55,66 @@ async function githubRequest(endpoint, options = {}) {
 }
 
 /**
- * List repositories accessible to the authenticated user
- * @param {Object} options - Filter options
- * @param {string} options.sort - Sort by (created, updated, pushed, full_name)
- * @param {number} options.perPage - Results per page (max 100)
+ * Validate that repository is accessible via GitHub App installation
+ * @param {string} repository - Repository full name (owner/repo)
+ * @returns {Promise<boolean>} True if accessible
+ * @throws {Error} If repository is not accessible
+ */
+async function validateRepositoryAccess(repository) {
+  try {
+    const installationRepos = await getInstallationRepositories();
+    const hasAccess = installationRepos.some(repo => repo.full_name === repository);
+
+    if (!hasAccess) {
+      throw new Error(
+        `No access to repository "${repository}". ` +
+        `Please add this repository to your SpikePrimeGit installation at ` +
+        `https://github.com/apps/spikeprimegit`
+      );
+    }
+
+    return true;
+  } catch (error) {
+    // Re-throw with helpful message
+    if (error.message.includes('No installation found')) {
+      throw new Error(
+        'SpikePrimeGit app not installed. ' +
+        'Please install it at https://github.com/apps/spikeprimegit/installations/new'
+      );
+    }
+    throw error;
+  }
+}
+
+/**
+ * List repositories accessible to the authenticated user via GitHub App installation
+ * Only returns repositories user explicitly granted access to
+ * @param {Object} options - Filter options (unused, kept for compatibility)
  * @returns {Promise<Array>} Array of repository objects
  */
 export async function listUserRepos(options = {}) {
-  const { sort = 'updated', perPage = 100 } = options;
+  try {
+    // Get repositories from GitHub App installation
+    const installationRepos = await getInstallationRepositories();
 
-  const params = new URLSearchParams({
-    per_page: perPage.toString(),
-    sort: sort,
-    affiliation: 'owner,collaborator' // Only repos user owns or has push access to
-  });
-
-  const repos = await githubRequest(`/user/repos?${params}`);
-
-  // Filter to only repos where user has push access
-  return repos.filter(repo => !repo.archived && repo.permissions?.push);
+    // Format to match expected structure and filter non-archived
+    return installationRepos
+      .filter(repo => !repo.archived)
+      .map(repo => ({
+        id: repo.id,
+        name: repo.name,
+        full_name: repo.full_name,
+        owner: { login: repo.owner.login },
+        private: repo.private,
+        default_branch: repo.default_branch,
+        updated_at: repo.updated_at,
+        permissions: { push: true }, // Installation repos have write access by definition
+      }))
+      .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+  } catch (error) {
+    console.error('[SpikePrimeGit API] Failed to get installation repositories:', error);
+    throw error;
+  }
 }
 
 /**
@@ -82,6 +124,10 @@ export async function listUserRepos(options = {}) {
  * @returns {Promise<Array>} Array of branch objects
  */
 export async function getBranches(owner, repo) {
+  // Validate access to this repository
+  const repository = `${owner}/${repo}`;
+  await validateRepositoryAccess(repository);
+
   return await githubRequest(`/repos/${owner}/${repo}/branches`);
 }
 
@@ -177,7 +223,10 @@ export async function pushFile(params) {
  * @returns {Promise<Object>} Result with commit SHA and file URL
  */
 export async function pushSpikeProject(params) {
-  const { repository, branch, projectName, zipContent } = params;
+  const { repository, branch, projectName, zipContent, commitMessage } = params;
+
+  // Validate repository access FIRST - GitHub App only has access to specific repos
+  await validateRepositoryAccess(repository);
 
   // Parse repository owner and name
   const [owner, repo] = repository.split('/');
@@ -204,7 +253,15 @@ export async function pushSpikeProject(params) {
 
   const timestamp = new Date().toISOString();
   const action = existingFile ? 'Update' : 'Add';
-  const commitMessage = `${action} SPIKE project: ${projectName}\n\nSynced from LEGO SPIKE Prime web editor\nTimestamp: ${timestamp}`;
+
+  // Use user-provided commit message with metadata appended
+  const fullCommitMessage = `${action} SPIKE project: ${projectName}
+
+${commitMessage}
+
+---
+Synced from LEGO SPIKE Prime web editor
+Timestamp: ${timestamp}`;
 
   // Push file
   const result = await pushFile({
@@ -213,7 +270,7 @@ export async function pushSpikeProject(params) {
     branch,
     path: filePath,
     content: zipContent,
-    message: commitMessage,
+    message: fullCommitMessage,
     sha: existingFile?.sha
   });
 

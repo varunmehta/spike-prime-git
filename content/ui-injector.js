@@ -3,8 +3,25 @@
  * Injects sync button and status indicators
  */
 
+// Initialize logger with unique variable name
+const uiLogger = (typeof window.createLogger === 'function')
+  ? window.createLogger('uiInjector')
+  : {
+      info: (...args) => console.log('[SpikePrimeGit:uiInjector]', ...args),
+      warn: (...args) => console.warn('[SpikePrimeGit:uiInjector]', ...args),
+      error: (...args) => console.error('[SpikePrimeGit:uiInjector]', ...args),
+      debug: (...args) => console.debug('[SpikePrimeGit:uiInjector]', ...args),
+      success: (...args) => console.log('%c[SpikePrimeGit:uiInjector]', 'color: green; font-weight: bold;', ...args),
+      state: (label, obj) => { console.log('%c[SpikePrimeGit:uiInjector] [STATE: ' + label + ']', 'color: blue; font-weight: bold;'); console.log(obj); },
+      separator: () => console.log('%c[SpikePrimeGit:uiInjector] ' + '='.repeat(60), 'color: gray;'),
+      group: (label) => console.group('[SpikePrimeGit:uiInjector] ' + label),
+      groupCollapsed: (label) => console.groupCollapsed('[SpikePrimeGit:uiInjector] ' + label),
+      groupEnd: () => console.groupEnd()
+    };
+
 class UIInjector {
   constructor(onSyncClick) {
+    uiLogger.info('UIInjector constructor called');
     this.onSyncClick = onSyncClick;
     this.syncButton = null;
     this.statusIndicator = null;
@@ -28,6 +45,10 @@ class UIInjector {
    * Create and inject UI elements
    */
   createUI() {
+    uiLogger.info('Creating UI elements...');
+    // Get icon URL
+    const iconUrl = chrome.runtime.getURL('assets/icons/icon48.png');
+
     // Create container
     const container = document.createElement('div');
     container.id = 'spikeprimegit-container';
@@ -35,13 +56,24 @@ class UIInjector {
       <div class="spikeprimegit-card">
         <div class="spikeprimegit-header">
           <div class="spikeprimegit-logo">
-            <span class="spikeprimegit-icon">🧱</span>
+            <span class="spikeprimegit-icon"><img src="${iconUrl}" class="spikeprimegit-logo-img"/></span>
             <span class="spikeprimegit-title">SpikePrimeGit</span>
           </div>
           <div class="spikeprimegit-status" id="spikeprimegit-status">
             <span class="status-dot"></span>
             <span class="status-text">Checking...</span>
           </div>
+        </div>
+        <div class="spikeprimegit-commit-section">
+          <textarea
+            id="spikeprimegit-commit-message"
+            class="spikeprimegit-commit-textarea"
+            placeholder="add details about what did you change"
+            rows="2"
+          ></textarea>
+          <small id="spikeprimegit-commit-error" class="spikeprimegit-error-text" style="display: none;">
+            ⚠️ Commit message is required
+          </small>
         </div>
         <button id="spikeprimegit-sync-btn" class="spikeprimegit-sync-btn">
           <span class="sync-icon">↻</span>
@@ -63,13 +95,24 @@ class UIInjector {
     // Get references
     this.syncButton = document.getElementById('spikeprimegit-sync-btn');
     this.statusIndicator = document.getElementById('spikeprimegit-status');
+    this.commitMessage = document.getElementById('spikeprimegit-commit-message');
+    this.commitError = document.getElementById('spikeprimegit-commit-error');
     const settingsButton = document.getElementById('spikeprimegit-settings-btn');
 
     // Attach event listeners
     this.syncButton.addEventListener('click', () => this.handleSyncClick());
     settingsButton.addEventListener('click', () => this.openSettings());
 
+    // Clear error on input
+    this.commitMessage.addEventListener('input', () => {
+      if (this.commitMessage.value.trim()) {
+        this.commitMessage.classList.remove('error');
+        this.commitError.style.display = 'none';
+      }
+    });
+
     this.isInjected = true;
+    uiLogger.success('UI elements created and injected successfully');
     this.updateConnectionStatus();
   }
 
@@ -77,17 +120,50 @@ class UIInjector {
    * Handle sync button click
    */
   async handleSyncClick() {
-    if (this.syncButton.disabled) return;
+    uiLogger.separator();
+    uiLogger.group('🔘 Sync Button Clicked');
+
+    if (this.syncButton.disabled) {
+      uiLogger.warn('Sync button is disabled - ignoring click');
+      uiLogger.groupEnd();
+      return;
+    }
+
+    // Validate commit message
+    const commitMessage = this.commitMessage.value.trim();
+    uiLogger.info(`Commit message: "${commitMessage}"`);
+
+    if (!commitMessage) {
+      uiLogger.warn('Commit message is empty - showing error');
+      this.commitMessage.classList.add('error');
+      this.commitError.style.display = 'block';
+      this.showNotification('Please enter a commit message before syncing', 'error');
+      uiLogger.groupEnd();
+      return;
+    }
+
+    uiLogger.success('✓ Commit message validated');
+    uiLogger.info('Setting button state to syncing...');
     this.setButtonState('syncing');
 
     try {
       if (this.onSyncClick) {
-        await this.onSyncClick();
+        uiLogger.info('Calling onSyncClick callback with commit message...');
+        await this.onSyncClick(commitMessage);
+        uiLogger.success('✓ onSyncClick callback completed');
+      } else {
+        uiLogger.error('onSyncClick callback is not defined!');
       }
+      // Clear commit message after successful sync
+      this.commitMessage.value = '';
+      uiLogger.info('Commit message cleared');
     } catch (error) {
+      uiLogger.error('Sync failed:', error);
       this.setButtonState('error');
       this.showNotification('Sync failed: ' + error.message, 'error');
     }
+
+    uiLogger.groupEnd();
   }
 
   /**
@@ -139,24 +215,33 @@ class UIInjector {
    * Update connection status indicator
    */
   async updateConnectionStatus() {
-    if (!this.statusIndicator) return;
+    if (!this.statusIndicator) {
+      uiLogger.warn('updateConnectionStatus called but statusIndicator is null');
+      return;
+    }
+
+    uiLogger.info('Updating connection status...');
 
     try {
       const response = await chrome.runtime.sendMessage({ type: 'CHECK_CONNECTION' });
+      uiLogger.state('Connection Response', response);
 
       const dot = this.statusIndicator.querySelector('.status-dot');
       const text = this.statusIndicator.querySelector('.status-text');
 
       if (response.connected) {
+        uiLogger.success('✓ Connected to GitHub');
         dot.className = 'status-dot connected';
         text.textContent = 'Connected';
         this.syncButton.disabled = false;
       } else {
+        uiLogger.warn('Not connected to GitHub');
         dot.className = 'status-dot disconnected';
         text.textContent = 'Not Connected';
         this.syncButton.disabled = true;
       }
     } catch (error) {
+      uiLogger.error('Error checking connection status:', error);
       const dot = this.statusIndicator.querySelector('.status-dot');
       const text = this.statusIndicator.querySelector('.status-text');
       dot.className = 'status-dot disconnected';
