@@ -54,3 +54,7 @@ yarn-error.log*
 # Test files
 test/
 *.test.js
+
+# Local Files 
+CHROME_WEB_STORE_JUSTIFICATIONS.txt
+CHROME_PERMISSIONS_JUSTIFICATION.md

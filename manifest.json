@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Sync your LEGO SPIKE Prime projects directly to GitHub repositories",
   "author": "Varun Mehta",
-  "homepage_url": "https://github.com/varunmehta/spike-prime-git",
+  "homepage_url": "https://varunmehta.github.io/spike-prime-git/",
   "permissions": [
     "storage",
     "identity",
