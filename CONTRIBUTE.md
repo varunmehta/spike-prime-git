@@ -2,8 +2,6 @@
 
 Thank you for your interest in contributing to SpikePrimeGit! This guide will help you get started with development.
 
-> The project was built using [`claude code`](https://www.claude.com/product/claude-code) as a coding partner
-
 ## Table of Contents
 
 - [Development Setup](#development-setup)
@@ -455,3 +453,5 @@ This project is provided as-is for educational purposes.
 ---
 
 **Thank you for contributing to SpikePrimeGit!** 🎉
+
+> The project was built using [`claude code`](https://www.claude.com/product/claude-code) as a coding partner

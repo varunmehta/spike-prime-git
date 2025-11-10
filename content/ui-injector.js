@@ -52,39 +52,98 @@ class UIInjector {
     // Create container
     const container = document.createElement('div');
     container.id = 'spikeprimegit-container';
-    container.innerHTML = `
-      <div class="spikeprimegit-card">
-        <div class="spikeprimegit-header">
-          <div class="spikeprimegit-logo">
-            <span class="spikeprimegit-icon"><img src="${iconUrl}" class="spikeprimegit-logo-img"/></span>
-            <span class="spikeprimegit-title">SpikePrimeGit</span>
-          </div>
-          <div class="spikeprimegit-status" id="spikeprimegit-status">
-            <span class="status-dot"></span>
-            <span class="status-text">Checking...</span>
-          </div>
-        </div>
-        <div class="spikeprimegit-commit-section">
-          <textarea
-            id="spikeprimegit-commit-message"
-            class="spikeprimegit-commit-textarea"
-            placeholder="add details about what did you change"
-            rows="2"
-          ></textarea>
-          <small id="spikeprimegit-commit-error" class="spikeprimegit-error-text" style="display: none;">
-            ⚠️ Commit message is required
-          </small>
-        </div>
-        <button id="spikeprimegit-sync-btn" class="spikeprimegit-sync-btn">
-          <span class="sync-icon">↻</span>
-          <span class="sync-text">Sync to GitHub</span>
-        </button>
-        <button id="spikeprimegit-settings-btn" class="spikeprimegit-settings-btn" title="Open SpikePrimeGit Settings">
-          ⚙️
-        </button>
-      </div>
-    `;
 
+    // Create card
+    const card = document.createElement('div');
+    card.className = 'spikeprimegit-card';
+
+    // Create header
+    const header = document.createElement('div');
+    header.className = 'spikeprimegit-header';
+
+    // Create logo section
+    const logoDiv = document.createElement('div');
+    logoDiv.className = 'spikeprimegit-logo';
+
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'spikeprimegit-icon';
+    const logoImg = document.createElement('img');
+    logoImg.src = iconUrl;
+    logoImg.className = 'spikeprimegit-logo-img';
+    iconSpan.appendChild(logoImg);
+
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'spikeprimegit-title';
+    titleSpan.textContent = 'SpikePrimeGit';
+
+    logoDiv.appendChild(iconSpan);
+    logoDiv.appendChild(titleSpan);
+
+    // Create status section
+    const statusDiv = document.createElement('div');
+    statusDiv.className = 'spikeprimegit-status';
+    statusDiv.id = 'spikeprimegit-status';
+
+    const statusDot = document.createElement('span');
+    statusDot.className = 'status-dot';
+    const statusText = document.createElement('span');
+    statusText.className = 'status-text';
+    statusText.textContent = 'Checking...';
+
+    statusDiv.appendChild(statusDot);
+    statusDiv.appendChild(statusText);
+
+    header.appendChild(logoDiv);
+    header.appendChild(statusDiv);
+
+    // Create commit section
+    const commitSection = document.createElement('div');
+    commitSection.className = 'spikeprimegit-commit-section';
+
+    const textarea = document.createElement('textarea');
+    textarea.id = 'spikeprimegit-commit-message';
+    textarea.className = 'spikeprimegit-commit-textarea';
+    textarea.placeholder = 'add details about what did you change';
+    textarea.rows = 2;
+
+    const errorSmall = document.createElement('small');
+    errorSmall.id = 'spikeprimegit-commit-error';
+    errorSmall.className = 'spikeprimegit-error-text';
+    errorSmall.style.display = 'none';
+    errorSmall.textContent = '⚠️ Commit message is required';
+
+    commitSection.appendChild(textarea);
+    commitSection.appendChild(errorSmall);
+
+    // Create sync button
+    const syncButton = document.createElement('button');
+    syncButton.id = 'spikeprimegit-sync-btn';
+    syncButton.className = 'spikeprimegit-sync-btn';
+
+    const syncIcon = document.createElement('span');
+    syncIcon.className = 'sync-icon';
+    syncIcon.textContent = '↻';
+    const syncText = document.createElement('span');
+    syncText.className = 'sync-text';
+    syncText.textContent = 'Sync to GitHub';
+
+    syncButton.appendChild(syncIcon);
+    syncButton.appendChild(syncText);
+
+    // Create settings button
+    const settingsButton = document.createElement('button');
+    settingsButton.id = 'spikeprimegit-settings-btn';
+    settingsButton.className = 'spikeprimegit-settings-btn';
+    settingsButton.title = 'Open SpikePrimeGit Settings';
+    settingsButton.textContent = '⚙️';
+
+    // Assemble the card
+    card.appendChild(header);
+    card.appendChild(commitSection);
+    card.appendChild(syncButton);
+    card.appendChild(settingsButton);
+
+    container.appendChild(card);
     document.body.appendChild(container);
 
     // Create notification container
@@ -263,11 +322,22 @@ class UIInjector {
 
     const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ';
 
-    notification.innerHTML = `
-      <span class="notification-icon">${icon}</span>
-      <span class="notification-message">${message}</span>
-      <button class="notification-close">×</button>
-    `;
+    // Create elements safely using DOM methods to prevent XSS
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'notification-icon';
+    iconSpan.textContent = icon;
+
+    const messageSpan = document.createElement('span');
+    messageSpan.className = 'notification-message';
+    messageSpan.textContent = message;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'notification-close';
+    closeBtn.textContent = '×';
+
+    notification.appendChild(iconSpan);
+    notification.appendChild(messageSpan);
+    notification.appendChild(closeBtn);
 
     this.notificationContainer.appendChild(notification);
 
@@ -275,7 +345,6 @@ class UIInjector {
     setTimeout(() => notification.classList.add('show'), 10);
 
     // Close button
-    const closeBtn = notification.querySelector('.notification-close');
     closeBtn.addEventListener('click', () => this.closeNotification(notification));
 
     // Auto-close

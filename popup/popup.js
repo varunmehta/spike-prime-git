@@ -255,22 +255,42 @@ function showInstallationHelp(installUrl) {
   helpDiv.id = 'installation-help';
   helpDiv.className = 'info-box';
   helpDiv.style.marginTop = '16px';
-  helpDiv.innerHTML = `
-    <h3>⚠️ No Repository Access</h3>
-    <p style="margin: 12px 0;">SpikePrimeGit doesn't have access to any repositories yet.</p>
-    <p style="margin: 12px 0; font-size: 13px; color: #4a5568;">
-      You need to add at least one repository to your SpikePrimeGit installation.
-    </p>
-    <a href="${installUrl}"
-       target="_blank"
-       class="btn-primary"
-       style="display: inline-block; margin-top: 8px; text-decoration: none; text-align: center;">
-      Add Repository Access
-    </a>
-    <p style="font-size: 12px; margin-top: 12px; color: #6b7280;">
-      After adding repository access, click the refresh button (↻) above to reload.
-    </p>
-  `;
+
+  // Create elements safely to prevent XSS
+  const h3 = document.createElement('h3');
+  h3.textContent = '⚠️ No Repository Access';
+
+  const p1 = document.createElement('p');
+  p1.style.margin = '12px 0';
+  p1.textContent = "SpikePrimeGit doesn't have access to any repositories yet.";
+
+  const p2 = document.createElement('p');
+  p2.style.margin = '12px 0';
+  p2.style.fontSize = '13px';
+  p2.style.color = '#4a5568';
+  p2.textContent = 'You need to add at least one repository to your SpikePrimeGit installation.';
+
+  const link = document.createElement('a');
+  link.href = installUrl;
+  link.target = '_blank';
+  link.className = 'btn-primary';
+  link.style.display = 'inline-block';
+  link.style.marginTop = '8px';
+  link.style.textDecoration = 'none';
+  link.style.textAlign = 'center';
+  link.textContent = 'Add Repository Access';
+
+  const p3 = document.createElement('p');
+  p3.style.fontSize = '12px';
+  p3.style.marginTop = '12px';
+  p3.style.color = '#6b7280';
+  p3.textContent = 'After adding repository access, click the refresh button (↻) above to reload.';
+
+  helpDiv.appendChild(h3);
+  helpDiv.appendChild(p1);
+  helpDiv.appendChild(p2);
+  helpDiv.appendChild(link);
+  helpDiv.appendChild(p3);
 
   // Insert after repo select form section
   const repoFormSection = elements.repoSelect.closest('.form-section');
@@ -332,17 +352,26 @@ async function loadSyncHistory() {
         const date = new Date(item.timestamp);
         const timeAgo = getTimeAgo(date);
 
-        div.innerHTML = `
-          <div class="sync-project-name">${item.projectName}</div>
-          <div class="sync-details">
-            ${item.repository} (${item.branch}) • ${timeAgo}
-          </div>
-        `;
+        // Create elements safely to prevent XSS
+        const projectNameDiv = document.createElement('div');
+        projectNameDiv.className = 'sync-project-name';
+        projectNameDiv.textContent = item.projectName;
+
+        const detailsDiv = document.createElement('div');
+        detailsDiv.className = 'sync-details';
+        detailsDiv.textContent = `${item.repository} (${item.branch}) • ${timeAgo}`;
+
+        div.appendChild(projectNameDiv);
+        div.appendChild(detailsDiv);
 
         elements.syncHistory.appendChild(div);
       });
     } else {
-      elements.syncHistory.innerHTML = '<p class="empty-state">No syncs yet</p>';
+      elements.syncHistory.textContent = '';
+      const emptyState = document.createElement('p');
+      emptyState.className = 'empty-state';
+      emptyState.textContent = 'No syncs yet';
+      elements.syncHistory.appendChild(emptyState);
     }
   } catch (error) {
     console.error('[SpikePrimeGit Popup] Error loading sync history:', error);

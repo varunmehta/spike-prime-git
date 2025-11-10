@@ -2,7 +2,7 @@
 
 > Automatically sync your LEGO SPIKE Prime projects to GitHub!
 
-**SpikePrimeGit** is a Chrome extension that helps you back up your LEGO SPIKE Prime projects to GitHub. Every time you save a project in SPIKE Prime, it's allows you to sync the llsp3 file to your GitHub repository.
+**SpikePrimeGit** is a Chrome extension that helps you back up your LEGO SPIKE Prime projects to GitHub. Every time you save a project in SPIKE Prime, it's allows you to sync the `.llsp3` file to your GitHub repository.
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue)](https://chrome.google.com/webstore)
 
@@ -19,6 +19,21 @@
 - 🎨 **Native UI** - Integrated sync button and notifications on SPIKE Prime page
 
 ---
+## Screenshots
+
+### Pre-Login Screen 
+
+![docs/images/pre-login-screenshot.png](docs/images/pre-login-screenshot.png)
+
+### Post Login Screen
+![docs/images/pop-up-screenshot.png](docs/images/pop-up-screenshot.png)
+
+### Sync with GitHub Button
+![docs/images/ui-injector-screenshot.png](docs/images/ui-injector-screenshot.png)
+
+
+---
+
 
 ## 🚀 Quick Start
 
@@ -67,41 +82,6 @@ Open https://spike.legoeducation.com and try one of these workflows:
 
 ---
 
-## 📖 How It Works
-
-```
-┌─────────────────────────────┐
-│  Work in SPIKE Prime       │
-│  • Create/edit projects    │
-│  • Upload existing files   │
-│  • Save changes (Ctrl+S)   │
-└──────────┬──────────────────┘
-           │
-           ↓ (auto-captured)
-┌──────────┴──────────────────┐
-│  SpikePrimeGit Extension    │
-│  • Detects file saves       │
-│  • Shows sync button        │
-│  • Converts to GitHub       │
-└──────────┬──────────────────┘
-           │
-           ↓ (one click)
-┌──────────┴──────────────────┐
-│  GitHub Repository          │
-│  • New commit created       │
-│  • Full version history     │
-│  • Browse/restore versions  │
-└─────────────────────────────┘
-```
-
-### File Capture
-
-The extension automatically captures your projects when:
-- ✅ You save a new project (Download/Export)
-- ✅ You upload a `.llsp3` file and save it
-- ✅ You edit and save an existing project
-- ✅ You make multiple edits to the same file
-
 ### Commit Messages
 
 Every sync creates a commit with:
@@ -112,9 +92,6 @@ Every sync creates a commit with:
 Example commit:
 ```
 Added motor control logic
-
-🤖 Generated with Claude Code
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ---
@@ -138,7 +115,7 @@ your-repo/
   └── projects/
       ├── MyRobot.llsp3
       ├── LineFollower.llsp3
-      └── PythonTest.llsp3
+      └── CompetitionReady.llsp3
 ```
 
 **To view version history:**
@@ -148,14 +125,6 @@ your-repo/
 4. Click **"History"** to see all versions
 5. Click any commit to see when it was saved
 6. Download any version to restore it
-
-### Extension Popup
-
-Click the extension icon to:
-- ✅ See connection status
-- ⚙️ Change repository/branch
-- 📊 View recent syncs
-- 🔌 Disconnect/reconnect to GitHub
 
 ---
 
@@ -222,7 +191,7 @@ Click the extension icon to:
 
 - Open an issue on [GitHub Issues](../../issues)
 - Check the [CONTRIBUTE.md](CONTRIBUTE.md) for development details
-- Enable debug logging (see CONTRIBUTE.md)
+- Enable debug logging (see [CONTRIBUTE.md](CONTRIBUTE.md))
 
 ---
 
@@ -242,15 +211,6 @@ This project is provided as-is for educational purposes.
 
 ---
 
-## 🙏 Acknowledgments
-
-- 🧱 **LEGO Education** for SPIKE Prime platform
-- 🐙 **GitHub** for API access
-- 🤖 **Anthropic Claude Code** for development assistance
-- 🌐 **Chrome Extensions** team for Manifest V3
-
----
-
 ## 📚 Additional Resources
 
 - **Chrome Web Store Listing** - _(link pending)_
@@ -266,4 +226,4 @@ Never lose your SPIKE Prime projects again! 🧱🤖
 
 ---
 
-> **Disclaimer:** This extension was developed with [Claude Code](https://www.claude.com/product/claude-code) as a coding partner.
+> **Disclaimer:** This extension was built using [`claude code`](https://www.claude.com/product/claude-code) as a coding partner.
