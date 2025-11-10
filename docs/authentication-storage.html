@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authentication Storage - SpikePrimeGit</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Left Sidebar Navigation -->
+  <nav id="sidebar">
+    <div class="sidebar-header">
+      <img src="images/icon48.png" alt="SpikePrimeGit Icon" class="sidebar-logo" />
+      <h2>SpikePrimeGit</h2>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">← Back to Docs</a>
+      <a href="#overview" class="nav-link">📖 Overview</a>
+      <a href="#what-stored" class="nav-link">💾 What's Stored</a>
+      <a href="#security" class="nav-link">🔒 Security</a>
+      <a href="#user-control" class="nav-link">🎛️ User Control</a>
+      <a href="privacy-policy.html" class="nav-link">🔐 Privacy Policy</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div id="main-content">
+    <header>
+      <div class="container">
+        <div class="header-content">
+          <h1>Authentication & Storage</h1>
+          <p class="tagline">How SpikePrimeGit stores your data securely</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="overview" class="section">
+        <h2>📖 Overview</h2>
+        <div class="info-box">
+          <h3>YES, We Store Authentication Information</h3>
+          <p>SpikePrimeGit <strong>does store</strong> authentication information locally in your browser using Chrome's secure storage API (<code>chrome.storage.local</code>).</p>
+          <p><strong>Important:</strong> All data is stored locally in your browser and is NEVER transmitted to third-party servers.</p>
+        </div>
+      </section>
+
+      <section id="what-stored" class="section">
+        <h2>💾 What Authentication Data is Stored?</h2>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">1</span>
+            <h3>GitHub OAuth Tokens</h3>
+          </div>
+          <div class="step-content">
+            <p><strong>Storage Key:</strong> <code>github_tokens</code></p>
+            <p><strong>Stored after successful GitHub authentication:</strong></p>
+            <code style="display: block; background: #2d3748; color: #68d391; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+{<br>
+&nbsp;&nbsp;accessToken: "ghu_xxxxx",<br>
+&nbsp;&nbsp;refreshToken: "ghr_xxxxx",<br>
+&nbsp;&nbsp;expiresAt: 1699564800000,<br>
+&nbsp;&nbsp;scope: "repo,user"<br>
+}
+            </code>
+            <ul>
+              <li><strong>accessToken:</strong> GitHub access token for API authentication</li>
+              <li><strong>refreshToken:</strong> Token for automatic renewal when access token expires</li>
+              <li><strong>expiresAt:</strong> Timestamp (milliseconds) when token expires</li>
+              <li><strong>scope:</strong> Permissions granted to the token</li>
+            </ul>
+            <p><strong>Purpose:</strong> Authenticate API requests to GitHub without requiring you to log in repeatedly.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">2</span>
+            <h3>GitHub App Installation Data</h3>
+          </div>
+          <div class="step-content">
+            <p><strong>Storage Key:</strong> <code>github_installation</code></p>
+            <p><strong>Stored after GitHub App authorization:</strong></p>
+            <code style="display: block; background: #2d3748; color: #68d391; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+{<br>
+&nbsp;&nbsp;id: 12345678,<br>
+&nbsp;&nbsp;account: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;login: "username",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;id: 987654,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;type: "User"<br>
+&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;repository_selection: "selected",<br>
+&nbsp;&nbsp;created_at: "2024-11-09T12:00:00Z"<br>
+}
+            </code>
+            <ul>
+              <li><strong>id:</strong> GitHub App installation ID</li>
+              <li><strong>account:</strong> Your GitHub account information</li>
+              <li><strong>repository_selection:</strong> Whether you selected "all" or specific repositories</li>
+              <li><strong>created_at:</strong> When the installation was created</li>
+            </ul>
+            <p><strong>Purpose:</strong> Track which GitHub App installation to use for API requests.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">3</span>
+            <h3>User Settings</h3>
+          </div>
+          <div class="step-content">
+            <p><strong>Storage Key:</strong> <code>user_settings</code></p>
+            <code style="display: block; background: #2d3748; color: #68d391; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+{<br>
+&nbsp;&nbsp;selectedRepo: "username/spike-projects",<br>
+&nbsp;&nbsp;selectedBranch: "main",<br>
+&nbsp;&nbsp;projectPath: "projects/"<br>
+}
+            </code>
+            <ul>
+              <li><strong>selectedRepo:</strong> Your chosen GitHub repository</li>
+              <li><strong>selectedBranch:</strong> Selected branch (usually "main")</li>
+              <li><strong>projectPath:</strong> Directory path where projects are saved</li>
+            </ul>
+            <p><strong>Purpose:</strong> Remember your preferences so you don't have to reconfigure on each sync.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">4</span>
+            <h3>Sync History</h3>
+          </div>
+          <div class="step-content">
+            <p><strong>Storage Key:</strong> <code>sync_history</code></p>
+            <p><strong>Stored after each successful sync (limited to 50 entries):</strong></p>
+            <code style="display: block; background: #2d3748; color: #68d391; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+[<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;projectName: "MyRobot.llsp3",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;repository: "username/spike-projects",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;branch: "main",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;timestamp: 1699564800000<br>
+&nbsp;&nbsp;}<br>
+]
+            </code>
+            <p><strong>Purpose:</strong> Display recent syncs in the extension popup for your reference.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">5</span>
+            <h3>Temporary Auth State (Auto-Deleted)</h3>
+          </div>
+          <div class="step-content">
+            <p><strong>Storage Key:</strong> <code>auth_state</code></p>
+            <div class="warning-box">
+              <strong>⚠️ Temporary Only:</strong> This token is created during OAuth authentication and <strong>automatically deleted</strong> after the authentication completes.
+            </div>
+            <p><strong>Purpose:</strong> Prevent Cross-Site Request Forgery (CSRF) attacks during OAuth flow.</p>
+            <p><strong>Lifecycle:</strong> Created before OAuth → Verified on callback → Immediately deleted</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="security" class="section">
+        <h2>🔒 Security Measures</h2>
+
+        <div class="content-box">
+          <h3>✅ Local Storage Only</h3>
+          <ul>
+            <li>All data stored in <code>chrome.storage.local</code> (Chrome's secure storage API)</li>
+            <li>Encrypted by Chrome's built-in storage security</li>
+            <li>Isolated from other extensions and websites</li>
+            <li>Never transmitted to third-party servers</li>
+            <li>Only sent directly to GitHub's official API when needed</li>
+          </ul>
+        </div>
+
+        <div class="content-box">
+          <h3>✅ Automatic Token Refresh</h3>
+          <ul>
+            <li>Tokens automatically refreshed before expiration</li>
+            <li>Old tokens replaced with new ones</li>
+            <li>No manual intervention required</li>
+            <li>Prevents authentication failures</li>
+          </ul>
+        </div>
+
+        <div class="content-box">
+          <h3>✅ CSRF Protection</h3>
+          <ul>
+            <li>State tokens prevent Cross-Site Request Forgery during OAuth</li>
+            <li>State verified on callback</li>
+            <li>Immediately deleted after verification</li>
+            <li>Protects against malicious authorization attempts</li>
+          </ul>
+        </div>
+
+        <div class="content-box">
+          <h3>✅ OAuth 2.0 Best Practices</h3>
+          <ul>
+            <li>Industry-standard authentication protocol</li>
+            <li>GitHub's official OAuth implementation</li>
+            <li>Secure token exchange</li>
+            <li>No password storage (uses GitHub's auth page)</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="user-control" class="section">
+        <h2>🎛️ User Control & Data Deletion</h2>
+
+        <h3>How to Clear Authentication Data</h3>
+
+        <div class="usage-method">
+          <h4>Option 1: Disconnect in Extension (Recommended)</h4>
+          <div class="content-box">
+            <ol>
+              <li>Click the SpikePrimeGit extension icon</li>
+              <li>Click <strong>"Disconnect"</strong> button</li>
+              <li>All authentication data is immediately cleared</li>
+            </ol>
+            <p><strong>Clears:</strong> OAuth tokens, installation data, user settings (but keeps sync history)</p>
+          </div>
+        </div>
+
+        <div class="usage-method">
+          <h4>Option 2: Uninstall Extension</h4>
+          <div class="content-box">
+            <ol>
+              <li>Go to <code>chrome://extensions/</code></li>
+              <li>Find SpikePrimeGit</li>
+              <li>Click <strong>"Remove"</strong></li>
+            </ol>
+            <p><strong>Clears:</strong> ALL extension data (tokens, settings, history, everything)</p>
+          </div>
+        </div>
+
+        <div class="usage-method">
+          <h4>Option 3: Clear Chrome Extension Storage</h4>
+          <div class="content-box">
+            <ol>
+              <li>Go to <code>chrome://settings/content/all</code></li>
+              <li>Search for "chrome-extension"</li>
+              <li>Find SpikePrimeGit and clear its data</li>
+            </ol>
+            <p><strong>Clears:</strong> ALL stored data</p>
+          </div>
+        </div>
+
+        <div class="usage-method">
+          <h4>Option 4: Revoke GitHub App Access</h4>
+          <div class="content-box">
+            <p>To completely revoke SpikePrimeGit's access to your GitHub account:</p>
+            <ol>
+              <li>Visit <a href="https://github.com/settings/installations" target="_blank">GitHub App Installations</a></li>
+              <li>Find "SpikePrimeGit" in the list</li>
+              <li>Click <strong>"Configure"</strong> or <strong>"Uninstall"</strong></li>
+            </ol>
+            <p><strong>Effect:</strong> Extension can no longer access your GitHub repositories (tokens become invalid)</p>
+          </div>
+        </div>
+
+        <div class="success-box">
+          <h3>🎉 You're Always in Control</h3>
+          <p>All stored data can be viewed, managed, and deleted at any time. You decide what stays and what goes!</p>
+        </div>
+      </section>
+
+      <section id="transparency" class="section">
+        <h2>🔍 Open Source Transparency</h2>
+        <div class="content-box">
+          <p><strong>Verify Everything:</strong> SpikePrimeGit is completely open source. You can:</p>
+          <ul>
+            <li>Review the complete source code at <a href="https://github.com/varunmehta/spike-prime-git" target="_blank">github.com/varunmehta/spike-prime-git</a></li>
+            <li>Audit exactly what data is stored and how it's used</li>
+            <li>Verify that no data is transmitted to third-party servers</li>
+            <li>See the authentication implementation in <code>background/github-auth.js</code></li>
+            <li>Submit security concerns or questions via GitHub Issues</li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <h3>📚 Related Documentation</h3>
+          <ul>
+            <li><a href="privacy-policy.html">Privacy Policy</a> - Complete privacy information</li>
+            <li><a href="index.html">Documentation</a> - Setup and usage guide</li>
+            <li><a href="https://github.com/varunmehta/spike-prime-git" target="_blank">GitHub Repository</a> - Source code</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        <p><strong>SpikePrimeGit</strong> - Made for LEGO SPIKE Prime enthusiasts</p>
+        <p>Not affiliated with LEGO Education or GitHub, Inc.</p>
+        <p style="font-size: 0.8rem; margin-top: 1rem; opacity: 0.8;">
+          <a href="index.html" style="color: #f5c402;">Documentation</a> •
+          <a href="getting-started.html" style="color: #f5c402;">New to GitHub?</a> •
+          <a href="privacy-policy.html" style="color: #f5c402;">Privacy Policy</a> •
+          <a href="https://github.com/varunmehta/spike-prime-git" target="_blank" style="color: #f5c402;">GitHub</a>
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Smooth scrolling and active nav highlight
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+          // Update active state
+          document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.remove('active');
+          });
+          this.classList.add('active');
+        }
+      });
+    });
+
+    // Highlight active section on scroll
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('section[id]');
+      let current = '';
+
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        if (window.pageYOffset >= sectionTop - 100) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${current}`) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
