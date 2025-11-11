@@ -1,6 +1,6 @@
 # Authentication Storage Summary
 
-## YES, We Store Authentication Information
+## We Store Authentication Information
 
 SpikePrimeGit **does store** authentication information locally in the browser using `chrome.storage.local`.
 
@@ -149,22 +149,3 @@ YES, this extension stores authentication credentials:
 - **Permission Justifications:** `CHROME_PERMISSIONS_JUSTIFICATION.md`
 - **Web Store Form:** `CHROME_WEB_STORE_JUSTIFICATIONS.txt`
 - **Auth Implementation:** `background/github-auth.js`
-
----
-
-## Summary for Chrome Web Store Form
-
-**Question: "Does your extension store authentication credentials?"**
-
-**Answer: YES**
-
-**Explanation:**
-```
-Extension stores GitHub OAuth tokens (access token, refresh token, expiration time)
-and GitHub App installation data in Chrome's local storage to maintain authenticated
-sessions. Tokens are stored securely using chrome.storage.local (encrypted by Chrome),
-never transmitted to third-party servers, and used exclusively for authenticated
-requests to GitHub's official API. Users can clear all auth data via the "Disconnect"
-button or by uninstalling the extension. CSRF protection implemented using state
-tokens during OAuth flow.
-```

@@ -4,8 +4,11 @@
 
 **SpikePrimeGit** is a Chrome extension that helps you back up your LEGO SPIKE Prime projects to GitHub. Every time you save a project in SPIKE Prime, it's allows you to sync the `.llsp3` file to your GitHub repository.
 
-[![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue)](https://chrome.google.com/webstore)
+[![Available in the Chrome Web Store](https://storage.googleapis.com/web-dev-uploads/image/WlD8wC6g8khYWPJUsQceQkhXSlv1/iNEddTyWiMfLSwFD6qGq.png)](https://chromewebstore.google.com/detail/spikeprimegit/ldiklhfinipoikhmfbnamjklkigcppoe)
 
+  [![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/ldiklhfinipoikhmfbnamjklkigcppoe)](https://chromewebstore.google.com/detail/spikeprimegit/ldiklhfinipoikhmfbnamjklkigcppoe)
+  [![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/ldiklhfinipoikhmfbnamjklkigcppoe)](https://chromewebstore.google.com/detail/spikeprimegit/ldiklhfinipoikhmfbnamjklkigcppoe)
+  [![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/ldiklhfinipoikhmfbnamjklkigcppoe)](https://chromewebstore.google.com/detail/spikeprimegit/ldiklhfinipoikhmfbnamjklkigcppoe)
 ---
 
 ## ✨ Features
