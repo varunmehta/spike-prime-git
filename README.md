@@ -6,9 +6,12 @@
 
 [![Available in the Chrome Web Store](https://developer.chrome.com/static/docs/webstore/branding/image/iNEddTyWiMfLSwFD6qGq.png)](https://chromewebstore.google.com/detail/spikeprimegit/ldiklhfinipoikhmfbnamjklkigcppoe)
 
+[![Get it on GitHub Marketplace](https://img.shields.io/badge/GitHub%20Marketplace-Get%20it%20on-black?style=for-the-badge&logo=github)](https://github.com/marketplace/spikeprimegit)
+
 [![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/ldiklhfinipoikhmfbnamjklkigcppoe)](https://chromewebstore.google.com/detail/spikeprimegit/ldiklhfinipoikhmfbnamjklkigcppoe)
 [![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/ldiklhfinipoikhmfbnamjklkigcppoe)](https://chromewebstore.google.com/detail/spikeprimegit/ldiklhfinipoikhmfbnamjklkigcppoe)
 [![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/ldiklhfinipoikhmfbnamjklkigcppoe)](https://chromewebstore.google.com/detail/spikeprimegit/ldiklhfinipoikhmfbnamjklkigcppoe)
+
 
 ---
 
