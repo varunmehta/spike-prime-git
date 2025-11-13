@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom GitHub App Setup - SpikePrimeGit</title>
+  <link rel="icon" type="image/png" href="images/icon48.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Mobile Menu Toggle -->
+  <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Toggle navigation menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- Left Sidebar Navigation -->
+  <nav id="sidebar">
+    <div class="sidebar-header">
+      <img src="images/icon48.png" alt="SpikePrimeGit Icon" class="sidebar-logo" />
+      <h2>SpikePrimeGit</h2>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">← Back to Docs</a>
+      <a href="#overview" class="nav-link">📖 Overview</a>
+      <a href="#why-custom-app" class="nav-link">🤔 Why Custom App?</a>
+      <a href="#prerequisites" class="nav-link">📋 Prerequisites</a>
+      <a href="#create-app" class="nav-link">🛠️ Create GitHub App</a>
+      <a href="#configure-extension" class="nav-link">⚙️ Configure Extension</a>
+      <a href="#testing" class="nav-link">✅ Testing</a>
+      <a href="#troubleshooting" class="nav-link">🔧 Troubleshooting</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div id="main-content">
+    <header>
+      <div class="container">
+        <div class="header-content">
+          <h1>Custom GitHub App Setup</h1>
+          <p class="tagline">Create Your Own GitHub App for SpikePrimeGit</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- Overview Section -->
+      <section id="overview" class="section">
+        <h2>📖 Overview</h2>
+
+        <div class="warning-box">
+          <h3>⚠️ Advanced Setup</h3>
+          <p>This guide is for users who want to create their own GitHub App instead of using the official SpikePrimeGit app from the GitHub Marketplace.</p>
+          <p><strong>Most users should use the official app.</strong> Only follow this guide if:</p>
+          <ul>
+            <li>The SpikePrimeGit Marketplace app is not yet available</li>
+            <li>You want to use a custom app for organizational/security reasons</li>
+            <li>You're comfortable with GitHub App configuration</li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <h3>What You'll Accomplish</h3>
+          <p>By the end of this guide, you will have:</p>
+          <ul>
+            <li>Created your own GitHub App</li>
+            <li>Configured it with the correct permissions</li>
+            <li>Connected SpikePrimeGit extension to use your custom app</li>
+            <li>Successfully synced a project to GitHub</li>
+          </ul>
+          <p><strong>Time Required:</strong> 20-30 minutes</p>
+        </div>
+      </section>
+
+      <!-- Why Custom App Section -->
+      <section id="why-custom-app" class="section">
+        <h2>🤔 Why Create a Custom GitHub App?</h2>
+
+        <div class="content-box">
+          <h3>When to Use a Custom App</h3>
+
+          <h4>✅ Good Reasons:</h4>
+          <ul>
+            <li><strong>Marketplace App Not Available:</strong> The official SpikePrimeGit app hasn't been approved yet</li>
+            <li><strong>Organizational Policy:</strong> Your organization requires apps to be managed internally</li>
+            <li><strong>Custom Branding:</strong> You want the app to appear under your organization's name</li>
+            <li><strong>Testing/Development:</strong> You're developing custom features or testing modifications</li>
+          </ul>
+
+          <h4>❌ Not Necessary If:</h4>
+          <ul>
+            <li>The official SpikePrimeGit app is available on GitHub Marketplace</li>
+            <li>You're a student or individual user just getting started</li>
+            <li>You want the simplest setup possible</li>
+          </ul>
+        </div>
+
+        <div class="tip-box">
+          <strong>💡 Recommendation:</strong> If you're new to GitHub Apps, try the official SpikePrimeGit app first. You can always switch to a custom app later if needed.
+        </div>
+      </section>
+
+      <!-- Prerequisites Section -->
+      <section id="prerequisites" class="section">
+        <h2>📋 Prerequisites</h2>
+
+        <div class="content-box">
+          <p>Before you begin, make sure you have:</p>
+          <ol>
+            <li><strong>GitHub Account:</strong> A GitHub account (personal or organization)</li>
+            <li><strong>Chrome Extension Installed:</strong> SpikePrimeGit extension installed from the Chrome Web Store</li>
+            <li><strong>Repository Created:</strong> At least one GitHub repository where you'll save projects</li>
+            <li><strong>Basic GitHub Knowledge:</strong> Familiarity with GitHub basics (repositories, branches)</li>
+          </ol>
+        </div>
+
+        <div class="warning-box">
+          <h3>⚠️ Important Notes</h3>
+          <ul>
+            <li><strong>OAuth App vs GitHub App:</strong> This guide creates a <strong>GitHub App</strong> (not an OAuth App). GitHub Apps are the modern, recommended approach.</li>
+            <li><strong>Permissions:</strong> You'll need permission to create apps in your account or organization</li>
+            <li><strong>Callback URL:</strong> The extension uses a specific callback URL that must be configured correctly</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Create GitHub App Section -->
+      <section id="create-app" class="section">
+        <h2>🛠️ Step 1: Create Your GitHub App</h2>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">1</span>
+            <h3>Navigate to GitHub App Settings</h3>
+          </div>
+          <div class="step-content">
+            <p>Choose where to create your app:</p>
+
+            <h4>Option A: Personal Account</h4>
+            <ol>
+              <li>Go to <a href="https://github.com/settings/apps" target="_blank">GitHub Settings → Developer settings → GitHub Apps</a></li>
+              <li>Click <strong>"New GitHub App"</strong></li>
+            </ol>
+
+            <h4>Option B: Organization Account</h4>
+            <ol>
+              <li>Go to your organization settings</li>
+              <li>Navigate to <strong>Developer settings → GitHub Apps</strong></li>
+              <li>Click <strong>"New GitHub App"</strong></li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">2</span>
+            <h3>Configure Basic Information</h3>
+          </div>
+          <div class="step-content">
+            <p>Fill in the basic app information:</p>
+
+            <div style="background: #f7fafc; border-left: 4px solid #4299e1; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+              <p><strong>GitHub App name:</strong></p>
+              <code style="display: block; background: #2d3748; color: #68d391; padding: 0.5rem; border-radius: 4px; margin: 0.5rem 0;">
+                SpikePrimeGit-CustomApp
+              </code>
+              <p style="font-size: 0.9rem; margin-top: 0.5rem;">Or any name you prefer (must be unique across GitHub)</p>
+            </div>
+
+            <div style="background: #f7fafc; border-left: 4px solid #4299e1; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+              <p><strong>Homepage URL:</strong></p>
+              <code style="display: block; background: #2d3748; color: #68d391; padding: 0.5rem; border-radius: 4px; margin: 0.5rem 0;">
+                https://github.com/varunmehta/spike-prime-git
+              </code>
+              <p style="font-size: 0.9rem; margin-top: 0.5rem;">Or link to your own documentation</p>
+            </div>
+
+            <div style="background: #f7fafc; border-left: 4px solid #4299e1; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+              <p><strong>Description:</strong></p>
+              <code style="display: block; background: #2d3748; color: #68d391; padding: 0.5rem; border-radius: 4px; margin: 0.5rem 0;">
+                Sync LEGO SPIKE Prime projects to GitHub automatically
+              </code>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">3</span>
+            <h3>Configure Callback URL</h3>
+          </div>
+          <div class="step-content">
+            <div class="warning-box">
+              <strong>🔴 CRITICAL:</strong> This must be exact or authentication will fail!
+            </div>
+
+            <div style="background: #f7fafc; border-left: 4px solid #e53e3e; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+              <p><strong>Callback URL:</strong></p>
+              <code style="display: block; background: #2d3748; color: #68d391; padding: 0.5rem; border-radius: 4px; margin: 0.5rem 0;">
+                https://&lt;YOUR-EXTENSION-ID&gt;.chromiumapp.org/
+              </code>
+              <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #c53030;">Replace <code>&lt;YOUR-EXTENSION-ID&gt;</code> with your actual extension ID</p>
+            </div>
+
+            <h4>How to Find Your Extension ID:</h4>
+            <ol>
+              <li>Open Chrome and go to <code>chrome://extensions/</code></li>
+              <li>Enable <strong>"Developer mode"</strong> (toggle in top-right)</li>
+              <li>Find <strong>SpikePrimeGit</strong> in the list</li>
+              <li>Copy the <strong>ID</strong> (long string like: <code>abcdefghijklmnopqrstuvwxyz123456</code>)</li>
+            </ol>
+
+            <div class="tip-box">
+              <strong>💡 Example:</strong> If your extension ID is <code>ldiklhfinipoikhmfbnamjklkigcppoe</code>, your callback URL would be:<br>
+              <code>https://ldiklhfinipoikhmfbnamjklkigcppoe.chromiumapp.org/</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">4</span>
+            <h3>Configure Webhook Settings</h3>
+          </div>
+          <div class="step-content">
+            <div style="background: #f7fafc; border-left: 4px solid #4299e1; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+              <p><strong>Webhook:</strong></p>
+              <p>☑️ <strong>Uncheck</strong> "Active" (webhooks not needed for this extension)</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">5</span>
+            <h3>Configure Permissions</h3>
+          </div>
+          <div class="step-content">
+            <p>Set the following permissions under <strong>"Repository permissions"</strong>:</p>
+
+            <div style="background: #f0fff4; border-left: 4px solid #48bb78; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+              <p><strong>Contents:</strong> <code>Read and write</code></p>
+              <p style="font-size: 0.9rem; color: #22543d;">Required to read repository files and create commits</p>
+            </div>
+
+            <div style="background: #f0fff4; border-left: 4px solid #48bb78; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+              <p><strong>Metadata:</strong> <code>Read-only</code></p>
+              <p style="font-size: 0.9rem; color: #22543d;">Automatically granted - required to list repositories</p>
+            </div>
+
+            <div class="warning-box">
+              <strong>⚠️ Important:</strong> Do NOT grant more permissions than needed. The extension only requires <strong>Contents (Read and write)</strong> and <strong>Metadata (Read-only)</strong>.
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">6</span>
+            <h3>Configure User Permissions</h3>
+          </div>
+          <div class="step-content">
+            <p>Under <strong>"User permissions"</strong>, no additional permissions are required. Leave all as "No access".</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">7</span>
+            <h3>Configure Installation Options</h3>
+          </div>
+          <div class="step-content">
+            <div style="background: #f7fafc; border-left: 4px solid #4299e1; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+              <p><strong>Where can this GitHub App be installed?</strong></p>
+              <p>Choose based on your needs:</p>
+              <ul>
+                <li><strong>Only on this account:</strong> For personal use only</li>
+                <li><strong>Any account:</strong> If you want to share with others (advanced)</li>
+              </ul>
+              <p><strong>Recommendation:</strong> Select "Only on this account" for simplicity</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">8</span>
+            <h3>Create the App</h3>
+          </div>
+          <div class="step-content">
+            <ol>
+              <li>Click <strong>"Create GitHub App"</strong> at the bottom</li>
+              <li>You'll be taken to your new app's settings page</li>
+            </ol>
+
+            <div class="success-box">
+              <h3>🎉 App Created!</h3>
+              <p>Your GitHub App is now created. Next, we need to generate credentials for the extension.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">9</span>
+            <h3>Generate Client Credentials</h3>
+          </div>
+          <div class="step-content">
+            <p>On your app's settings page:</p>
+
+            <ol>
+              <li>Scroll down to <strong>"Client secrets"</strong> section</li>
+              <li>Click <strong>"Generate a new client secret"</strong></li>
+              <li><strong>IMMEDIATELY COPY</strong> the client secret (you won't be able to see it again!)</li>
+              <li>Also note your <strong>Client ID</strong> (visible at the top of the page)</li>
+            </ol>
+
+            <div class="warning-box">
+              <strong>🔴 CRITICAL:</strong> Save your Client ID and Client Secret in a secure place (password manager, secure note, etc.). You'll need both to configure the extension.
+            </div>
+
+            <div style="background: #2d3748; color: #68d391; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+              <p><strong>Keep These Safe:</strong></p>
+              <p>Client ID: Iv1.xxxxxxxxxxxxxxxx</p>
+              <p>Client Secret: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">10</span>
+            <h3>Install the App to Your Account</h3>
+          </div>
+          <div class="step-content">
+            <ol>
+              <li>On your app's settings page, click <strong>"Install App"</strong> in the left sidebar</li>
+              <li>Click the <strong>Install</strong> button next to your account/organization</li>
+              <li>Select repositories to grant access to:
+                <ul>
+                  <li><strong>All repositories:</strong> App can access all your repos</li>
+                  <li><strong>Only select repositories:</strong> Choose specific repos (recommended)</li>
+                </ul>
+              </li>
+              <li>Click <strong>"Install"</strong></li>
+            </ol>
+
+            <div class="success-box">
+              <h3>✅ Installation Complete!</h3>
+              <p>Your GitHub App is now installed and ready to use. Next, we'll configure the extension.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Configure Extension Section -->
+      <section id="configure-extension" class="section">
+        <h2>⚙️ Step 2: Configure the Extension</h2>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">1</span>
+            <h3>Open Extension Options</h3>
+          </div>
+          <div class="step-content">
+            <ol>
+              <li>Click the SpikePrimeGit extension icon in Chrome</li>
+              <li>If you're already connected, click <strong>"Disconnect"</strong> first</li>
+              <li>Right-click the extension icon</li>
+              <li>Select <strong>"Options"</strong> or go to <code>chrome://extensions/</code> and click <strong>"Details"</strong> → <strong>"Extension options"</strong></li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">2</span>
+            <h3>Enable Custom GitHub App Mode</h3>
+          </div>
+          <div class="step-content">
+            <p>In the extension options page:</p>
+            <ol>
+              <li>Find the <strong>"Use Custom GitHub App"</strong> section</li>
+              <li>Toggle <strong>"Enable Custom GitHub App"</strong> ON</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">3</span>
+            <h3>Enter Your App Credentials</h3>
+          </div>
+          <div class="step-content">
+            <p>Enter the credentials you saved earlier:</p>
+
+            <div style="background: #f7fafc; border-left: 4px solid #4299e1; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+              <p><strong>Client ID:</strong></p>
+              <input type="text" placeholder="Iv1.xxxxxxxxxxxxxxxx" disabled style="width: 100%; padding: 0.5rem; margin: 0.5rem 0; border: 1px solid #cbd5e0; border-radius: 4px;">
+            </div>
+
+            <div style="background: #f7fafc; border-left: 4px solid #4299e1; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+              <p><strong>Client Secret:</strong></p>
+              <input type="password" placeholder="••••••••••••••••••••••••••••••••" disabled style="width: 100%; padding: 0.5rem; margin: 0.5rem 0; border: 1px solid #cbd5e0; border-radius: 4px;">
+            </div>
+
+            <div class="warning-box">
+              <strong>⚠️ Keep Your Secret Safe:</strong> Never share your Client Secret publicly or commit it to version control.
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">4</span>
+            <h3>Save and Connect</h3>
+          </div>
+          <div class="step-content">
+            <ol>
+              <li>Click <strong>"Save Settings"</strong></li>
+              <li>Close the options page</li>
+              <li>Click the extension icon again</li>
+              <li>Click <strong>"Connect to GitHub"</strong></li>
+              <li>Authorize the connection when prompted</li>
+            </ol>
+
+            <div class="success-box">
+              <h3>🎉 Connected!</h3>
+              <p>Your extension is now connected to your custom GitHub App!</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Testing Section -->
+      <section id="testing" class="section">
+        <h2>✅ Step 3: Test Your Setup</h2>
+
+        <div class="content-box">
+          <h3>Verify Everything Works</h3>
+
+          <h4>1. Check Connection Status</h4>
+          <ol>
+            <li>Click the extension icon</li>
+            <li>Verify you see <strong>"Connected as [your-username]"</strong></li>
+            <li>Verify you can see your repositories in the dropdown</li>
+          </ol>
+
+          <h4>2. Configure Settings</h4>
+          <ol>
+            <li>Select a repository from the dropdown</li>
+            <li>Select a branch (usually "main")</li>
+            <li>Set a project path (e.g., "projects/")</li>
+            <li>Click <strong>"Save Settings"</strong></li>
+          </ol>
+
+          <h4>3. Test Sync</h4>
+          <ol>
+            <li>Open <a href="https://spike.legoeducation.com" target="_blank">SPIKE Prime software</a></li>
+            <li>Create or open a project</li>
+            <li>Make a small change and save (Ctrl+S or Cmd+S)</li>
+            <li>Find the SpikePrimeGit card on the page</li>
+            <li>Enter a commit message (e.g., "Test sync")</li>
+            <li>Click <strong>"Sync to GitHub"</strong></li>
+            <li>Wait for the success notification</li>
+          </ol>
+
+          <h4>4. Verify on GitHub</h4>
+          <ol>
+            <li>Go to your GitHub repository</li>
+            <li>Navigate to the project path you configured</li>
+            <li>Verify your .llsp3 file is there</li>
+            <li>Check the commit message matches what you entered</li>
+          </ol>
+        </div>
+
+        <div class="success-box">
+          <h3>🎊 Success!</h3>
+          <p>If you see your project file on GitHub, everything is working correctly! You're now ready to use SpikePrimeGit with your custom GitHub App.</p>
+        </div>
+      </section>
+
+      <!-- Troubleshooting Section -->
+      <section id="troubleshooting" class="section">
+        <h2>🔧 Troubleshooting</h2>
+
+        <div class="faq">
+          <div class="faq-item">
+            <h3>"Invalid callback URL" Error</h3>
+            <p><strong>Problem:</strong> Authentication fails with callback URL error.</p>
+            <p><strong>Solution:</strong></p>
+            <ul>
+              <li>Double-check your callback URL in GitHub App settings</li>
+              <li>Make sure it matches: <code>https://&lt;extension-id&gt;.chromiumapp.org/</code></li>
+              <li>Verify your extension ID at <code>chrome://extensions/</code></li>
+              <li>Ensure the URL ends with a trailing slash (<code>/</code>)</li>
+            </ul>
+          </div>
+
+          <div class="faq-item">
+            <h3>"Unauthorized" or "403 Forbidden" Errors</h3>
+            <p><strong>Problem:</strong> Extension can't access repositories.</p>
+            <p><strong>Solutions:</strong></p>
+            <ul>
+              <li>Verify your app is installed to your account (GitHub Settings → Applications → Installed GitHub Apps)</li>
+              <li>Check that the app has access to the repository you're trying to use</li>
+              <li>Verify your Client ID and Client Secret are correct</li>
+              <li>Make sure you granted <strong>Contents: Read and write</strong> permission</li>
+              <li>Try disconnecting and reconnecting the extension</li>
+            </ul>
+          </div>
+
+          <div class="faq-item">
+            <h3>Client Secret Lost or Compromised</h3>
+            <p><strong>Problem:</strong> You lost your Client Secret or it was exposed.</p>
+            <p><strong>Solution:</strong></p>
+            <ol>
+              <li>Go to your GitHub App settings</li>
+              <li>Scroll to <strong>"Client secrets"</strong></li>
+              <li>Click <strong>"Revoke"</strong> on the compromised secret</li>
+              <li>Click <strong>"Generate a new client secret"</strong></li>
+              <li>Update the extension options with the new secret</li>
+              <li>Reconnect the extension</li>
+            </ol>
+          </div>
+
+          <div class="faq-item">
+            <h3>Want to Switch Back to Official App</h3>
+            <p><strong>When the official SpikePrimeGit app becomes available:</strong></p>
+            <ol>
+              <li>Click the extension icon</li>
+              <li>Click <strong>"Disconnect"</strong></li>
+              <li>Go to extension options</li>
+              <li>Toggle <strong>"Enable Custom GitHub App"</strong> OFF</li>
+              <li>Click <strong>"Save Settings"</strong></li>
+              <li>Click the extension icon and <strong>"Connect to GitHub"</strong></li>
+              <li>You'll now use the official app</li>
+            </ol>
+          </div>
+
+          <div class="faq-item">
+            <h3>Need More Help?</h3>
+            <ul>
+              <li>Check the main <a href="index.html#troubleshooting">Troubleshooting Guide</a></li>
+              <li>Review <a href="https://docs.github.com/en/apps/creating-github-apps" target="_blank">GitHub's documentation on creating apps</a></li>
+              <li>Ask for help on the <a href="https://github.com/varunmehta/spike-prime-git/issues" target="_blank">GitHub repository</a></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <div class="info-box" style="margin-top: 3rem;">
+        <h3>📚 Related Documentation</h3>
+        <ul>
+          <li><a href="index.html">Main Documentation</a> - Complete setup and usage guide</li>
+          <li><a href="getting-started.html">Getting Started Guide</a> - For beginners</li>
+          <li><a href="authentication-storage.html">Authentication & Storage</a> - How data is stored</li>
+          <li><a href="privacy-policy.html">Privacy Policy</a> - Privacy information</li>
+        </ul>
+      </div>
+    </main>
+
+    <footer>
+      <div class="container">
+        <p><strong>SpikePrimeGit</strong> - Made for LEGO SPIKE Prime enthusiasts</p>
+        <p>Not affiliated with LEGO Education or GitHub, Inc.</p>
+        <p style="font-size: 0.9rem; margin-top: 1rem;">
+          <a href="index.html" style="color: #f5c402;">Documentation</a> •
+          <a href="getting-started.html" style="color: #f5c402;">Getting Started</a> •
+          <a href="privacy-policy.html" style="color: #f5c402;">Privacy Policy</a> •
+          <a href="https://github.com/varunmehta/spike-prime-git" target="_blank" style="color: #f5c402;">GitHub</a>
+        </p>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.8;">
+          Built with <a href="https://www.claude.com/product/claude-code" target="_blank" style="color: #f5c402;">Claude Code</a>
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Smooth scrolling and active nav highlight
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+          // Update active state
+          document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.remove('active');
+          });
+          this.classList.add('active');
+        }
+      });
+    });
+
+    // Highlight active section on scroll
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('section[id]');
+      let current = '';
+
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        if (window.pageYOffset >= sectionTop - 100) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${current}`) {
+          link.classList.add('active');
+        }
+      });
+    });
+
+    // Mobile menu toggle
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+
+    if (mobileMenuToggle && sidebar) {
+      mobileMenuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        mobileMenuToggle.classList.toggle('active');
+      });
+
+      // Close mobile menu when clicking on a link
+      document.querySelectorAll('#sidebar a').forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth <= 768) {
+            sidebar.classList.remove('active');
+            mobileMenuToggle.classList.remove('active');
+          }
+        });
+      });
+
+      // Close mobile menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 &&
+            !sidebar.contains(e.target) &&
+            !mobileMenuToggle.contains(e.target) &&
+            sidebar.classList.contains('active')) {
+          sidebar.classList.remove('active');
+          mobileMenuToggle.classList.remove('active');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
