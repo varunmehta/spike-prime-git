@@ -1,457 +1,172 @@
 # Contributing to SpikePrimeGit
 
-Thank you for your interest in contributing to SpikePrimeGit! This guide will help you get started with development.
-
-## Table of Contents
-
-- [Development Setup](#development-setup)
-- [Architecture](#architecture)
-- [Project Structure](#project-structure)
-- [Development Workflow](#development-workflow)
-- [Testing](#testing)
-- [Code Style](#code-style)
-- [Pull Request Process](#pull-request-process)
-- [Debugging](#debugging)
-
----
-
 ## Development Setup
 
 ### Prerequisites
-
-- **Google Chrome** (latest version recommended)
-- **Git**
-- **GitHub account** with OAuth App configured
+- Google Chrome
+- Git
+- GitHub account with OAuth App configured
 
 ### Getting Started
 
-1. **Clone the repository:**
+1. Clone and load extension:
    ```bash
    git clone https://github.com/varunmehta/spike-prime-git.git
    cd spike-prime-git
    ```
 
-2. **Load extension in Chrome:**
-   - Open Chrome and navigate to `chrome://extensions/`
-   - Enable **"Developer mode"** (toggle in top-right corner)
-   - Click **"Load unpacked"**
-   - Select the `/spike-prime-git` directory
+2. In Chrome:
+   - Go to `chrome://extensions/`
+   - Enable "Developer mode"
+   - Click "Load unpacked"
+   - Select the `spike-prime-git` directory
 
-3. **Configure OAuth:**
-   - Create a GitHub OAuth App (see README.md for details)
-   - Get your Extension ID from `chrome://extensions/`
-   - Update OAuth callback URL: `https://YOUR_EXTENSION_ID.chromiumapp.org/`
-   - Enter Client ID and Secret in extension popup
+3. Configure OAuth:
+   - Create GitHub OAuth App
+   - Get Extension ID from `chrome://extensions/`
+   - Set callback URL: `https://YOUR_EXTENSION_ID.chromiumapp.org/`
+   - Enter Client ID/Secret in extension popup
 
-4. **Test on SPIKE Prime:**
-   - Go to https://spike.legoeducation.com
-   - Open or create a project
-   - Try saving and syncing
+4. Test at https://spike.legoeducation.com
 
-### Hot Reloading
-
-After making code changes:
-1. Go to `chrome://extensions/`
-2. Click the **reload icon** on SpikePrimeGit
-3. Refresh the SPIKE Prime page
-4. Test your changes
+### Hot Reload
+After code changes: Reload extension at `chrome://extensions/` → Refresh SPIKE Prime page
 
 ---
 
 ## Architecture
 
-### Overview
+Chrome Extension Manifest V3 with three layers:
 
-SpikePrimeGit uses a Chrome Extension Manifest V3 architecture with three main components:
+1. **MAIN World** (`spike-interceptor.js`): Intercepts File System API, captures `.llsp3` ArrayBuffer
+2. **ISOLATED World** (`content-script.js`): Receives data via custom events, manages UI/sync logic
+3. **Service Worker** (`service-worker.js`, `github-auth.js`, `github-api.js`): OAuth + GitHub API
 
-```
-┌─────────────────────────────────────┐
-│  SPIKE Prime Web Editor             │
-│  (spike.legoeducation.com)          │
-└──────────────┬──────────────────────┘
-               │
-       ┌───────▼────────┐
-       │ MAIN World     │  spike-interceptor.js
-       │ • Intercepts File System API
-       │ • Intercepts Blob URLs
-       │ • Captures ArrayBuffer
-       │ • Dispatches custom events
-       └───────┬────────┘
-               │ custom events
-       ┌───────▼────────┐
-       │ ISOLATED World │  content-script.js
-       │ • Receives project data
-       │ • Chrome Extension APIs
-       │ • Auto-sync logic
-       │ • UI management
-       └───────┬────────┘
-               │ chrome.runtime.sendMessage
-       ┌───────▼────────┐
-       │ Service Worker │  service-worker.js
-       │ • OAuth flow   │  github-auth.js
-       │ • GitHub API   │  github-api.js
-       │ • Settings     │
-       └───────┬────────┘
-               │ HTTPS
-       ┌───────▼────────┐
-       │  GitHub API    │
-       └────────────────┘
-```
-
-### Key Concepts
-
-**MAIN vs ISOLATED Worlds:**
-- **MAIN World**: Runs in page context, can access page variables, intercepts SPIKE's functions
-- **ISOLATED World**: Separate context, has Chrome Extension API access, cannot access page variables
-- **Communication**: Custom events bridge the two worlds
-
-**File Capture Strategy:**
-- Intercepts `showSaveFilePicker()` (File System Access API)
-- Wraps writable stream's `write()` method
-- Captures ArrayBuffer on every save (not just first download)
-- Verifies ZIP magic number (`PK`)
-
-**Auto-Sync Flow:**
-1. User saves in SPIKE (Ctrl+S)
-2. Interceptor captures ArrayBuffer
-3. Event dispatched to ISOLATED world
-4. Checks if auto-sync enabled
-5. Converts to base64 for message passing
-6. Service worker pushes to GitHub
-7. Success notification displayed
+**Flow:** User saves → Interceptor captures → Event to content script → Service worker pushes to GitHub
 
 ---
 
 ## Project Structure
 
 ```
-brickhub/
-├── manifest.json              # Extension manifest (Manifest V3)
-├── background/                # Service worker (background processes)
-│   ├── service-worker.js     # Message router, coordinates all operations
-│   ├── github-auth.js        # OAuth 2.0 flow, token management
-│   └── github-api.js         # GitHub REST API wrapper
-├── content/                   # Content scripts (injected into SPIKE page)
-│   ├── spike-interceptor.js  # MAIN world - captures project downloads
-│   ├── content-script.js     # ISOLATED world - Chrome APIs, coordination
-│   └── ui-injector.js        # Injects sync UI into SPIKE page
-├── popup/                     # Extension popup UI
-│   ├── popup.html            # Settings interface
-│   ├── popup.js              # Popup logic
-│   └── popup.css             # Popup styling
-├── lib/                       # Utility libraries
-│   └── pkce.js               # OAuth PKCE helper
-├── assets/                    # Static resources
-│   ├── icons/                # Extension icons (16, 48, 128px)
-│   └── styles/
-│       └── inject.css        # Injected UI styles
-└── backend/                   # Optional backend (NOT USED)
-    └── cloudflare-worker/    # Can be deleted
+spike-prime-git/
+├── manifest.json              # Extension config
+├── background/                # Service worker
+│   ├── service-worker.js     # Message router
+│   ├── github-auth.js        # OAuth flow
+│   └── github-api.js         # GitHub API calls
+├── content/                   # Content scripts
+│   ├── spike-interceptor.js  # File capture (MAIN world)
+│   ├── content-script.js     # Coordination (ISOLATED world)
+│   └── ui-injector.js        # UI injection
+├── popup/                     # Settings UI
+│   ├── popup.html/js/css
+├── lib/pkce.js               # OAuth helper
+└── assets/                    # Icons and styles
 ```
 
-### Key Files
-
-**manifest.json** - Extension configuration
-- Defines permissions, content scripts, background scripts
-- Specifies which pages to inject into
-- Declares OAuth redirect URI pattern
-
-**spike-interceptor.js** - Core capture logic
-- Runs in MAIN world to access page functions
-- Intercepts File System Access API
-- Intercepts Blob URL creation
-- Monitors download buttons
-- Extracts project name from DOM
-
-**content-script.js** - Coordination layer
-- Receives captured projects from MAIN world
-- Manages auto-sync logic
-- Converts ArrayBuffer to base64
-- Communicates with service worker
-
-**github-auth.js** - OAuth implementation
-- Direct GitHub OAuth (no backend needed)
-- Token storage and refresh
-- PKCE for security
-- Token expiry handling (8 hours)
-
-**github-api.js** - GitHub operations
-- List repositories
-- Get branches
-- Push files (create/update)
-- Sync history tracking
+**Key files:**
+- `spike-interceptor.js`: Intercepts File System API, captures ArrayBuffer
+- `content-script.js`: Receives data, manages sync
+- `github-auth.js`: OAuth 2.0 with PKCE
+- `github-api.js`: Repository/branch/file operations
 
 ---
 
 ## Development Workflow
 
-### Making Changes
-
-1. **Edit code** in your preferred editor
-2. **Reload extension** in `chrome://extensions/`
-3. **Refresh SPIKE page** if needed
-4. **Test thoroughly**
-5. **Check console** for errors
-6. **Commit changes** with clear message
-
-### Adding Features
-
-1. Create feature branch: `git checkout -b feature/my-feature`
-2. Implement feature
-3. Test on SPIKE Prime
-4. Update documentation if needed
-5. Create pull request
+1. Edit code
+2. Reload extension at `chrome://extensions/`
+3. Refresh SPIKE Prime page
+4. Test and check console
+5. Commit with clear message
 
 ### Common Tasks
 
-**Add new GitHub API endpoint:**
-1. Add function to `background/github-api.js`
-2. Add message handler to `background/service-worker.js`
-3. Call from content script or popup
+**Add GitHub API endpoint:** Edit `github-api.js` → Add handler to `service-worker.js` → Call from content script/popup
 
-**Modify capture logic:**
-1. Edit `content/spike-interceptor.js`
-2. Test with different save scenarios
-3. Check console logs for capture events
+**Modify capture:** Edit `spike-interceptor.js` → Test different save scenarios
 
-**Update UI:**
-1. Edit `popup/popup.html` and `popup/popup.js` for settings
-2. Edit `content/ui-injector.js` for injected UI
-3. Update CSS as needed
+**Update UI:** Edit `popup/` files for settings, `ui-injector.js` for page UI
 
 ---
 
 ## Testing
 
-### Manual Testing Checklist
+### Testing Checklist
+- [ ] Extension loads, connects to GitHub
+- [ ] Save project in SPIKE → appears on GitHub
+- [ ] Auto-sync creates commits
+- [ ] Special characters in project names work
+- [ ] Error handling (invalid credentials, no repo selected, offline)
 
-**Basic Functionality:**
-- [ ] Extension loads without errors
-- [ ] Can connect to GitHub
-- [ ] Can select repository and branch
-- [ ] Can save project in SPIKE
-- [ ] Project appears on GitHub
-- [ ] Commit message is correct
+### Debug Tools
+- **Service Worker:** `chrome://extensions/` → "service worker"
+- **Content Script:** F12 on SPIKE page
+- **Popup:** Right-click icon → "Inspect popup"
+- **Storage:** DevTools → Application → Extension Storage
 
-**Auto-Sync:**
-- [ ] Enable auto-sync toggle
-- [ ] Save project multiple times
-- [ ] Each save creates new commit
-- [ ] Notifications appear correctly
-
-**Edge Cases:**
-- [ ] Test with special characters in project name
-- [ ] Test with empty project path
-- [ ] Test with private repository
-- [ ] Test disconnecting and reconnecting
-- [ ] Test with expired OAuth token
-
-**Error Handling:**
-- [ ] Test with invalid credentials
-- [ ] Test with no repository selected
-- [ ] Test with network offline
-- [ ] Check console for errors
-
-### Testing Tools
-
-**Service Worker Console:**
-```
-chrome://extensions/ → SpikePrimeGit → "service worker"
-```
-
-**Content Script Console:**
-```
-F12 on SPIKE page → Console
-```
-
-**Popup Console:**
-```
-Right-click extension icon → "Inspect popup"
-```
-
-**Storage Inspection:**
-```
-DevTools → Application → Storage → Extension Storage
-```
-
-### Console Log Prefixes
-
-Filter console by these prefixes:
-- `[SpikePrimeGit]` - General logs
-- `[SpikePrimeGit Auth]` - OAuth logs
-- `[SpikePrimeGit API]` - GitHub API logs
-- `[SpikePrimeGit Content]` - Content script logs
+**Console prefixes:** `[SpikePrimeGit]`, `[SpikePrimeGit Auth]`, `[SpikePrimeGit API]`
 
 ---
 
 ## Code Style
 
-### JavaScript
-
-- Use **ES6+** features (async/await, arrow functions, etc.)
-- Use **JSDoc** comments for functions
-- Use **const/let**, never `var`
-- Descriptive variable names
-- Keep functions small and focused
-
-**Example:**
-```javascript
-/**
- * Push SPIKE project to GitHub
- * @param {string} projectName - Project name
- * @param {ArrayBuffer} content - Project file content
- * @returns {Promise<Object>} Result with commit SHA
- */
-async function pushProject(projectName, content) {
-  // Implementation
-}
-```
-
-### Logging
-
-- Use consistent prefixes: `[SpikePrimeGit Component]`
-- Log important events, not every operation
-- Use `console.error()` for errors
+- ES6+ (async/await, arrow functions, const/let)
+- JSDoc comments for functions
+- Descriptive names, small focused functions
+- Log with prefixes: `[SpikePrimeGit Component]`
 - Remove debug logs before committing
-
-### File Organization
-
-- One class per file when possible
-- Group related functions together
-- Export public functions explicitly
-- Keep imports at top of file
 
 ---
 
-## Pull Request Process
+## Pull Requests
 
 ### Before Submitting
+1. Test on SPIKE Prime
+2. Check console for errors
+3. Update docs if needed
+4. Remove debug code
 
-1. **Test thoroughly** on SPIKE Prime
-2. **Check console** for errors and warnings
-3. **Update documentation** if API changed
-4. **Run code review** on your own code
-5. **Ensure no debug code** remains
+### PR Format
+**Title:** Clear description (e.g., "Add custom commit message feature")
 
-### PR Requirements
-
-**Title:** Clear, concise description
-```
-Add custom commit message feature
-Fix OAuth token refresh bug
-Update README with new setup steps
-```
-
-**Description:** Should include:
+**Description:**
 - What changed and why
-- How to test the changes
-- Screenshots/videos for UI changes
-- Link to related issues
+- How to test
+- Screenshots for UI changes
+- Related issues
 
 **Checklist:**
-- [ ] Code follows style guide
-- [ ] No console errors
+- [ ] Follows code style
 - [ ] Tested on SPIKE Prime
-- [ ] Documentation updated
-- [ ] Commit messages are clear
-
-### Review Process
-
-1. Maintainer reviews code
-2. Automated checks run (if configured)
-3. Feedback provided
-4. Make requested changes
-5. Final approval and merge
+- [ ] Docs updated
+- [ ] No console errors
 
 ---
 
 ## Debugging
 
-### Common Issues
+**Common Issues:**
+- "Extension context invalidated": Refresh SPIKE page
+- "Cannot access chrome.runtime": Use ISOLATED world (content-script.js)
+- "Project not captured": Check injection timing in manifest.json
+- OAuth errors: Verify callback URL, Client ID/Secret, token expiry
 
-**"Extension context invalidated"**
-- Happens after reloading extension
-- Solution: Refresh SPIKE page
+**Debug workflow:**
+1. Identify layer (MAIN world / ISOLATED world / Service worker / Popup)
+2. Check appropriate console (F12 on page / chrome://extensions / Inspect popup)
+3. Add logging: `console.log('[SpikePrimeGit Debug]', data);`
+4. Test incrementally
 
-**"Cannot access chrome.runtime"**
-- Trying to use Chrome API in MAIN world
-- Solution: Use ISOLATED world (content-script.js)
-
-**"Project not captured"**
-- Interceptor may not be installed in time
-- Solution: Check injection timing in manifest.json
-
-**OAuth errors**
-- Check callback URL matches Extension ID
-- Verify Client ID and Secret are correct
-- Check token hasn't expired
-
-### Debug Workflow
-
-1. **Identify the layer** where issue occurs:
-   - MAIN world capture?
-   - ISOLATED world coordination?
-   - Service worker OAuth/API?
-   - Popup UI?
-
-2. **Check appropriate console:**
-   - Content scripts: F12 on SPIKE page
-   - Service worker: chrome://extensions
-   - Popup: Inspect popup
-
-3. **Add logging:**
-   ```javascript
-   console.log('[SpikePrimeGit Debug]', data);
-   ```
-
-4. **Test incrementally:**
-   - Isolate the problem
-   - Test one change at a time
-   - Verify fix works
-
-### Network Debugging
-
-View GitHub API requests:
-1. Open DevTools (F12)
-2. Go to Network tab
-3. Filter by "github.com"
-4. Look for failed requests (red)
-5. Check request/response details
+**Network debugging:** DevTools (F12) → Network tab → Filter "github.com"
 
 ---
 
 ## Resources
 
-### Documentation
-
-- **Chrome Extensions:** https://developer.chrome.com/docs/extensions/
-- **Manifest V3:** https://developer.chrome.com/docs/extensions/mv3/intro/
-- **GitHub API:** https://docs.github.com/en/rest
-- **File System Access API:** https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API
-
-### Tools
-
-- **Chrome Extension Debugger:** Built into Chrome DevTools
-- **GitHub REST API Explorer:** https://docs.github.com/en/rest
-- **OAuth Playground:** https://www.oauth.com/playground/
+- [Chrome Extensions Docs](https://developer.chrome.com/docs/extensions/)
+- [GitHub API Docs](https://docs.github.com/en/rest)
+- [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API)
 
 ---
-
-## Getting Help
-
-- **Questions:** Open a GitHub Discussion
-- **Bugs:** Open a GitHub Issue
-- **Security:** Email maintainers privately
-- **General:** Comment on related issues
-
----
-
-## License
-
-This project is provided as-is for educational purposes.
-
----
-
-**Thank you for contributing to SpikePrimeGit!** 🎉
-
-> The project was built using [`claude code`](https://www.claude.com/product/claude-code) as a coding partner
